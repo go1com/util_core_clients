@@ -1,0 +1,24 @@
+{
+  "name":              "go1/util_core_clients",
+  "license":           "proprietary",
+  "prefer-stable":     true,
+  "minimum-stability": "stable",
+  "autoload":          {
+    "psr-4": {
+      "go1\\clients\\": "./"
+    }
+  },
+  "require":           {
+    "php":                     "^7.1",
+    "guzzlehttp/guzzle":       "^6.0",
+    "doctrine/cache":          "^v1.6.0",
+    "doctrine/dbal":           "^2.8.0",
+    "pimple/pimple":           "^v3.0.0",
+    "ramsey/uuid":             "^3.4",
+    "go1/util_core":           "dev-master",
+    "php-amqplib/php-amqplib": "^2.6",
+    "psr/log":                 "~1.0",
+    "symfony/http-foundation": "^4.0 | ^3.4",
+    "symfony/property-access": "^4.0 | ^3.4"
+  }
+}
