@@ -1,12 +1,11 @@
 <?php
 
-namespace go1\util\schema\tests;
+namespace go1\clients\tests;
 
 use go1\clients\MqClient;
 use go1\util\queue\Queue;
-use go1\util\tests\UtilTestCase;
 
-class UserClientTest extends UtilTestCase
+class UserClientTest extends UtilClientTestCase
 {
     public function test()
     {

@@ -1,13 +1,12 @@
 <?php
 
-namespace go1\util\schema\tests;
+namespace go1\clients\tests;
 
 use go1\clients\LoClient;
 use go1\util\queue\Queue;
 use go1\util\tests\QueueMockTrait;
-use go1\util\tests\UtilTestCase;
 
-class LoClientTest extends UtilTestCase
+class LoClientTest extends UtilClientTestCase
 {
     use QueueMockTrait;
 

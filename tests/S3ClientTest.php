@@ -1,6 +1,6 @@
 <?php
 
-namespace go1\util\tests;
+namespace go1\clients\tests;
 
 use go1\clients\S3Client;
 use go1\util\user\UserHelper;
@@ -8,13 +8,13 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use ReflectionClass;
 
-class S3ClientTest extends UtilTestCase
+class S3ClientTest extends UtilClientTestCase
 {
     /** @var S3Client s3Client */
     protected $s3Client;
-    private $c;
-    private $file;
-    private $content;
+    private   $c;
+    private   $file;
+    private   $content;
 
     public function setUp()
     {
@@ -26,7 +26,7 @@ class S3ClientTest extends UtilTestCase
         fwrite($handle, 'foo');
         fclose($handle);
 
-        $this->content = (object)[
+        $this->content = (object) [
             'scheme' => 'foo',
             'host'   => 'bar',
             'path'   => 'baz',

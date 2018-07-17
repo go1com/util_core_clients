@@ -1,12 +1,11 @@
 <?php
 
-namespace go1\util\schema\tests;
+namespace go1\clients\tests;
 
 use Exception;
 use go1\clients\MqClient;
 use go1\util\schema\mock\UserMockTrait;
 use go1\util\Service;
-use go1\util\tests\UtilTestCase;
 use go1\util\UtilServiceProvider;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -18,7 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
-class MqClientTest extends UtilTestCase
+class MqClientTest extends UtilClientTestCase
 {
     use UserMockTrait;
 

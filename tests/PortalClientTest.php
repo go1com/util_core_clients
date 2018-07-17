@@ -1,16 +1,15 @@
 <?php
 
-namespace go1\util\schema\tests;
+namespace go1\clients\tests;
 
 use Doctrine\Common\Cache\ArrayCache;
 use go1\clients\PortalClient;
-use go1\util\tests\UtilTestCase;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
-use Psr\Http\Message\RequestInterface;
 use GuzzleHttp\Psr7\Response;
+use Psr\Http\Message\RequestInterface;
 
-class PortalClientTest extends UtilTestCase
+class PortalClientTest extends UtilClientTestCase
 {
     public function test404()
     {

@@ -1,15 +1,14 @@
 <?php
 
-namespace go1\util\schema\tests;
+namespace go1\clients\tests;
 
 use go1\clients\MailClient;
-use go1\util\notify\MailTemplate;
+use go1\util\portal\MailTemplate;
 use go1\util\portal\PortalHelper;
 use go1\util\queue\Queue;
 use go1\util\schema\mock\PortalMockTrait;
-use go1\util\tests\UtilTestCase;
 
-class MailClientTest extends UtilTestCase
+class MailClientTest extends UtilClientTestCase
 {
     use PortalMockTrait;
 
@@ -95,13 +94,13 @@ class MailClientTest extends UtilTestCase
         $this->assertCount(1, $this->queueMessages[Queue::DO_MAIL_SEND]);
         $this->assertEquals(
             [
-                'recipient'     => 'foo@bar.com',
-                'subject'       => 'subject',
-                'body'          => 'body',
-                'html'          => 'html',
-                'context'       => [],
-                'attachments'   => [],
-                'options'       => [],
+                'recipient'   => 'foo@bar.com',
+                'subject'     => 'subject',
+                'body'        => 'body',
+                'html'        => 'html',
+                'context'     => [],
+                'attachments' => [],
+                'options'     => [],
             ],
             $this->queueMessages[Queue::DO_MAIL_SEND][0]
         );
