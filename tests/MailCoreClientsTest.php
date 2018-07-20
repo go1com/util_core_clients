@@ -8,35 +8,27 @@ use go1\util\portal\PortalHelper;
 use go1\util\queue\Queue;
 use go1\util\schema\mock\PortalMockTrait;
 
-class MailClientTest extends UtilClientTestCase
+class MailCoreClientsTest extends UtilCoreClientsTestCase
 {
     use PortalMockTrait;
 
-    private $c;
-
-    public function setUp()
+    /**
+     * @runInSeparateProcess
+     */
+    public function testSmtpPortal()
     {
-        parent::setUp();
-
-        $this->c = $this->getContainer();
-        $this->c->extend('go1.client.mq', function () {
-            return $this->queue;
-        });
-    }
-
-    public function testSmtpInstance()
-    {
-        $instanceId = $this->createPortal($this->db, [
-            'title' => $instance = 'foo.bar',
+        /** @var MailClient $client */
+        $container = $this->getContainer();
+        $client = $container['go1.client.mail'];
+        $portalId = $this->createPortal($this->db, [
+            'title' => $portalName = 'foo.bar',
             'data'  => [
                 'configuration' => [PortalHelper::FEATURE_CUSTOM_SMTP => true],
             ],
         ]);
 
-        /** @var MailClient $mailclient */
-        $mailClient = $this->c['go1.client.mail'];
-        $mailClient
-            ->instance($this->db, $instance)
+        $client
+            ->instance($this->db, $portalName)
             ->post('foo@bar.com', new MailTemplate('id', 'subject', 'body', 'html'));
 
         $this->assertArrayHasKey(Queue::DO_MAIL_SEND, $this->queueMessages);
@@ -44,7 +36,7 @@ class MailClientTest extends UtilClientTestCase
         $this->assertEquals(
             [
                 'instance'      => 'foo.bar',
-                'from_instance' => $instanceId,
+                'from_instance' => $portalId,
                 'recipient'     => 'foo@bar.com',
                 'subject'       => 'subject',
                 'body'          => 'body',
@@ -57,21 +49,25 @@ class MailClientTest extends UtilClientTestCase
         );
     }
 
-    public function testNoSmtpInstance()
+    /**
+     * @runInSeparateProcess
+     */
+    public function testNoSmtpPortal()
     {
-        $instanceId = $this->createPortal($this->db, ['title' => $instance = 'foo.bar']);
+        /** @var MailClient $client */
+        $container = $this->getContainer();
+        $client = $container['go1.client.mail'];
+        $portalId = $this->createPortal($this->db, ['title' => $portalName = 'foo.bar']);
 
-        /** @var MailClient $mailclient */
-        $mailClient = $this->c['go1.client.mail'];
-        $mailClient
-            ->instance($this->db, $instance)
+        $client
+            ->instance($this->db, $portalName)
             ->post('foo@bar.com', new MailTemplate('id', 'subject', 'body', 'html'));
 
         $this->assertArrayHasKey(Queue::DO_MAIL_SEND, $this->queueMessages);
         $this->assertCount(1, $this->queueMessages[Queue::DO_MAIL_SEND]);
         $this->assertEquals(
             [
-                'from_instance' => $instanceId,
+                'from_instance' => $portalId,
                 'recipient'     => 'foo@bar.com',
                 'subject'       => 'subject',
                 'body'          => 'body',
@@ -84,11 +80,15 @@ class MailClientTest extends UtilClientTestCase
         );
     }
 
-    public function testNoInstance()
+    /**
+     * @runInSeparateProcess
+     */
+    public function testNoPortal()
     {
-        /** @var MailClient $mailclient */
-        $mailClient = $this->c['go1.client.mail'];
-        $mailClient->post('foo@bar.com', new MailTemplate('id', 'subject', 'body', 'html'));
+        /** @var MailClient $client */
+        $container = $this->getContainer();
+        $client = $container['go1.client.mail'];
+        $client->post('foo@bar.com', new MailTemplate('id', 'subject', 'body', 'html'));
 
         $this->assertArrayHasKey(Queue::DO_MAIL_SEND, $this->queueMessages);
         $this->assertCount(1, $this->queueMessages[Queue::DO_MAIL_SEND]);

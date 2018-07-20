@@ -9,11 +9,15 @@ use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\RequestInterface;
 
-class PortalClientTest extends UtilClientTestCase
+class PortalCoreClientsTest extends UtilCoreClientsTestCase
 {
     public function test404()
     {
-        $client = $this->getMockBuilder(Client::class)->setMethods(['request'])->getMock();
+        $client = $this
+            ->getMockBuilder(Client::class)
+            ->setMethods(['request'])
+            ->getMock();
+
         $client
             ->expects($this->once())
             ->method('request')

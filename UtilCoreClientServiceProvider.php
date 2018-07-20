@@ -7,8 +7,12 @@ use Pimple\ServiceProviderInterface;
 
 class UtilCoreClientServiceProvider implements ServiceProviderInterface
 {
-    public function register(Container $pimple)
+    public function register(Container $c)
     {
+        $c['go1.client.portal'] = function (Container $c) {
+            return new PortalClient($c['client'], $c['portal_url'], $c['cache']);
+        };
+
         $c['go1.client.user'] = function (Container $c) {
             return new UserClient($c['client'], $c['user_url'], $c['go1.client.mq']);
         };
@@ -17,8 +21,8 @@ class UtilCoreClientServiceProvider implements ServiceProviderInterface
             return new MailClient($c['go1.client.mq']);
         };
 
-        $c['go1.client.portal'] = function (Container $c) {
-            return new PortalClient($c['client'], $c['portal_url'], $c['cache']);
+        $c['go1.client.lo'] = function (Container $c) {
+            return new LoClient($c['client'], $c['lo_url'], $c['go1.client.mq']);
         };
 
         $c['go1.client.mq'] = function (Container $c) {
@@ -32,10 +36,6 @@ class UtilCoreClientServiceProvider implements ServiceProviderInterface
             $currentRequest = $c->offsetExists('request_stack') ? $c['request_stack']->getCurrentRequest() : null;
 
             return new MqClient($o['host'], $o['port'], $o['user'], $o['pass'], $logger, $c['access_checker'], $c, $currentRequest);
-        };
-
-        $c['go1.client.lo'] = function (Container $c) {
-            return new LoClient($c['client'], $c['lo_url'], $c['go1.client.mq']);
         };
     }
 }

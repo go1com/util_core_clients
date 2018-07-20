@@ -12,8 +12,8 @@ use InvalidArgumentException;
 class MailClient
 {
     private $queue;
-    private $instance;
-    private $instanceId;
+    private $portalName;
+    private $portalId;
 
     public function __construct(MqClient $queue)
     {
@@ -25,15 +25,15 @@ class MailClient
      *              ->instance($db, $instance)
      *              ->post(…);
      */
-    public function instance(Connection $db, $instance): MailClient
+    public function instance(Connection $db, $portalName): MailClient
     {
         $helper = new PortalChecker;
-        $portal = is_object($instance) ? $instance : $helper->load($db, $instance);
+        $portal = is_object($portalName) ? $portalName : $helper->load($db, $portalName);
         if ($portal) {
             $client = clone $this;
-            $client->instanceId = $portal->id;
+            $client->portalId = $portal->id;
             if ($helper->useCustomSMTP($portal)) {
-                $client->instance = $portal->title;
+                $client->portalName = $portal->title;
             }
 
             return $client;
@@ -42,7 +42,15 @@ class MailClient
         return $this;
     }
 
-    public function post($recipient, Template $template, array $context = [], array $options = [], $attachments = [], $cc = [], $bcc = [], array $queueContext = [])
+    public function post(
+        $recipient,
+        Template $template,
+        array $context = [],
+        array $options = [],
+        $attachments = [],
+        $cc = [],
+        $bcc = [],
+        array $queueContext = [])
     {
         $this->send(null, $recipient, $template->getSubject(), $template->getBody(), $template->getHtml(), $context, $options, $attachments, $cc, $bcc, $queueContext);
     }
@@ -50,16 +58,27 @@ class MailClient
     /**
      * @deprecated
      */
-    public function send($privateKey, $recipient, $subject, $body, $html, array $context = [], array $options = [], $attachments = [], $cc = [], $bcc = [], array $queueContext = [])
+    public function send(
+        $privateKey,
+        $recipient,
+        $subject,
+        $body,
+        $html,
+        array $context = [],
+        array $options = [],
+        $attachments = [],
+        $cc = [],
+        $bcc = [],
+        array $queueContext = [])
     {
         $data = array_filter(['cc' => $cc, 'bcc' => $bcc]);
 
-        if ($this->instance) {
-            $data['instance'] = $this->instance;
+        if ($this->portalName) {
+            $data['instance'] = $this->portalName;
         }
 
-        if ($this->instanceId) {
-            $data['from_instance'] = $this->instanceId;
+        if ($this->portalId) {
+            $data['from_instance'] = $this->portalId;
         }
 
         $data += [
@@ -75,14 +94,21 @@ class MailClient
         $this->queue->queue($data, Queue::DO_MAIL_SEND, $queueContext);
     }
 
-    public function template(PortalClient $portalClient, string $instance, string $mailKey, string $defaultSubject, string $defaultBody, string $defaultHtml = null, bool $strict = true): Template
+    public function template(
+        PortalClient $portalClient,
+        string $portalName,
+        string $mailKey,
+        string $defaultSubject,
+        string $defaultBody,
+        string $defaultHtml = null,
+        bool $strict = true): Template
     {
         if ($strict && !MailTemplate::has($mailKey)) {
             throw new InvalidArgumentException('Invalid mail key: ' . $mailKey);
         }
 
         try {
-            return $portalClient->mailTemplate($instance, $mailKey);
+            return $portalClient->mailTemplate($portalName, $mailKey);
         }
         catch (InvalidArgumentException $e) {
             return new Template($mailKey, $defaultSubject, $defaultBody, $defaultHtml);

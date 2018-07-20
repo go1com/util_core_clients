@@ -5,7 +5,7 @@ namespace go1\clients\tests;
 use go1\clients\MqClient;
 use go1\util\queue\Queue;
 
-class UserClientTest extends UtilClientTestCase
+class UserCoreClientsTest extends UtilCoreClientsTestCase
 {
     public function test()
     {
