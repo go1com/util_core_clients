@@ -44,8 +44,7 @@ class PortalClient
             if (!$portal || $response->getStatusCode() === 404) {
                 $is404 = true;
                 $this->cache->save($this->cacheId, 404, $ttl = 30);
-            }
-            else {
+            } else {
                 $this->cache->save($this->cacheId, $portal, $tll = 120);
             }
         }
@@ -62,8 +61,7 @@ class PortalClient
                     return $json->data;
                 }
             }
-        }
-        catch (BadResponseException $e) {
+        } catch (BadResponseException $e) {
         }
 
         return false;
