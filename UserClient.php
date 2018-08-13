@@ -64,7 +64,7 @@ class UserClient
         $body = $this
             ->client
             ->get(
-                "{$this->userUrl}/phpu  /current/{$uuid}/$instance", [
+                "{$this->userUrl}/account/current/{$uuid}/$instance", [
                 'headers' => ['JWT-Expire-Time' => $jwtExpire],
             ])
             ->getBody()
