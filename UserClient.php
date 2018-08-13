@@ -3,6 +3,7 @@
 namespace go1\clients;
 
 use go1\util\queue\Queue;
+use go1\util\user\UserHelper;
 use GuzzleHttp\Client;
 use Ramsey\Uuid\Uuid;
 use stdClass;
@@ -120,5 +121,22 @@ class UserClient
     public function findAdministrators($portalName, $all = false, $limit = 10, $offset = 0)
     {
         return $this->findUsers($portalName, ['administrator'], $all, $limit, $offset);
+    }
+
+    public function uuid2jwt(Client $client, string $userUrl, string $uuid, string $portalName = null)
+    {
+        $url = rtrim($userUrl, '/') . "/account/current/{$uuid}" . (!is_null($portalName) ? "/{$portalName}" : '');
+        $res = $client->get($url, ['http_errors' => false]);
+
+        return (200 == $res->getStatusCode())
+            ? json_decode($res->getBody()->getContents())->jwt
+            : false;
+    }
+
+    public function profileId2jwt(Client $client, string $userUrl, int $profileId, string $portalName = null)
+    {
+        return ($uuid = (new UserHelper())->profileId2uuid($client, $userUrl, $profileId))
+            ? $this->uuid2jwt($client, $userUrl, $uuid, $portalName)
+            : false;
     }
 }
