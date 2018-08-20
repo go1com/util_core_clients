@@ -25,6 +25,10 @@ class UtilCoreClientServiceProvider implements ServiceProviderInterface
             return new LoClient($c['client'], $c['lo_url'], $c['go1.client.mq']);
         };
 
+        $c['go1.client.explore'] = function (Container $c) {
+            return new ExploreClient($c['client'], $c['explore_url']);
+        };
+
         $c['go1.client.mq'] = function (Container $c) {
             $logger = null;
             $o = $c['queueOptions'];
