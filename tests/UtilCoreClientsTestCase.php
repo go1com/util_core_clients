@@ -3,6 +3,7 @@
 namespace go1\clients\tests;
 
 use Doctrine\Common\Cache\ArrayCache;
+use go1\clients\ExploreClient;
 use go1\clients\UtilCoreClientServiceProvider;
 use go1\util\Service;
 use go1\util\tests\UtilCoreTestCase;
@@ -18,7 +19,10 @@ class UtilCoreClientsTestCase extends UtilCoreTestCase
             throw new RuntimeException('Please call ::setUp() before using this.');
         }
 
-        $container['client'] = new Client;
+        $container['client'] = function (Container $c) {
+            return new Client();
+        };
+
         $container['cache'] = new ArrayCache;
         $container->register(new UtilCoreClientServiceProvider, [
             'queueOptions' => [
@@ -29,7 +33,7 @@ class UtilCoreClientsTestCase extends UtilCoreTestCase
             ],
         ]);
 
-        $serviceNames = ['lo', 'user', 'mail', 'portal', 'currency', 'rules', 'sms', 'graphin', 's3', 'realtime'];
+        $serviceNames = ['lo', 'user', 'mail', 'portal', 'currency', 'rules', 'sms', 'graphin', 's3', 'realtime', 'explore'];
         foreach ($serviceNames as $serviceName) {
             $container[$serviceName . '_url'] = Service::url($serviceName, 'qa');
         }
