@@ -24,7 +24,7 @@ class ExploreClient
             ],
             'query'       => [
                 'admin'  => 1,
-                'field'  => ['id'],
+                'field'  => ['id', 'realm'],
                 'portal' => $portalId,
                 'id'     => [$loId],
             ],
