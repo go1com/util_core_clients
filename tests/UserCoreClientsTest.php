@@ -43,7 +43,6 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
         $c['go1.client.user']->unblockIp('192.168.0.1');
     }
 
-
     public function dataGetJwt()
     {
         return [
@@ -95,8 +94,10 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
                    ->willReturnCallback(function ($client, $userUrl, $uuid, $portalName) use ($userClient) {
                        $uuid2jwt = new \ReflectionMethod(UserClient::class, 'uuid2jwt');
                        $rs = $uuid2jwt->invokeArgs($userClient, [$client, $userUrl, $uuid, $portalName]);
+
                        return $rs;
                    });
+
         return $userClient;
     }
 
@@ -110,7 +111,7 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
         $client->expects($this->any())
                ->method('get')
                ->willReturnCallback(function ($url, $options) use (&$urlResult, $portalName, $payload, $id) {
-                   if(-1 < strpos($url,'account/masquerade')){
+                   if (-1 < strpos($url, 'account/masquerade')) {
                        return new Response(200, ['Content-Type' => 'application/json'], json_encode(UserHelper::load($this->db, $id)));
                    }
                    $urlResult = $url;
@@ -125,6 +126,7 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
 
                    return new Response(200, ['Content-Type' => 'application/json'], json_encode(['jwt' => UserHelper::encode($payload)]));
                });
+
         return $client;
     }
 
@@ -163,15 +165,16 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
     private function fakeProfileId2uuid(int $id)
     {
         $client = $this->getMockBuilder(UserClient::class)
-                           ->setMethods(['get'])
-                           ->disableOriginalConstructor()
-                           ->getMock();
+                       ->setMethods(['get'])
+                       ->disableOriginalConstructor()
+                       ->getMock();
 
         $client->expects($this->any())
-                   ->method('get')
-                   ->willReturnCallback(function ($client, $userUrl, $profileId) use ($id) {
-                       return new Response(200, ['Content-Type' => 'application/json'], json_encode(UserHelper::load($this->db, $id)));
-                   });
+               ->method('get')
+               ->willReturnCallback(function ($client, $userUrl, $profileId) use ($id) {
+                   return new Response(200, ['Content-Type' => 'application/json'], json_encode(UserHelper::load($this->db, $id)));
+               });
+
         return $client;
     }
 
@@ -193,8 +196,8 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
         $client = $this->fakeClient($urlResult, $portalName, $this->createPayload($user), $userId);
         $userClient = $this->fakeUserClient($uuid, $portalName);
 
-        $profileId2jwt = new \ReflectionMethod(UserClient::class,'profileId2jwt');
-        $rs = $profileId2jwt->invokeArgs($userClient, array($client, $apiUrl, $profileId, $portalName));
+        $profileId2jwt = new \ReflectionMethod(UserClient::class, 'profileId2jwt');
+        $rs = $profileId2jwt->invokeArgs($userClient, [$client, $apiUrl, $profileId, $portalName]);
 
         $jwt = UserHelper::encode($payload);
 
@@ -206,5 +209,39 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
         }
 
         $this->assertEquals($urlResult, "{$apiUrl}/account/current/{$uuid}" . (!is_null($portalName) ? "/{$portalName}" : ''));
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testIsCourseAuthor()
+    {
+        $c = $this->getContainer();
+
+        $c->extend('client', function () use ($c) {
+            $httpClient = $this
+                ->getMockBuilder(Client::class)
+                ->disableOriginalConstructor()
+                ->setMethods(['get'])
+                ->getMock();
+
+            $httpClient
+                ->expects($this->any())
+                ->method('get')
+                ->willReturnCallback(function ($url, $options) use ($c) {
+                    return new Response(200, [], json_encode([
+                            'accounts' => [
+                                ['courseAuthor' => 1],
+                            ],
+                        ])
+                    );
+                });
+
+            return $httpClient;
+        });
+
+        /** @var UserClient $client */
+        $client = $c['go1.client.user'];
+        $this->assertTrue($client->isCourseAuthor('qa.mygo1.com', 'jwt'));
     }
 }

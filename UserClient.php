@@ -139,4 +139,25 @@ class UserClient
             ? $this->uuid2jwt($client, $userUrl, $uuid, $portalName)
             : false;
     }
+
+    public function postLogin($portalIdOrTitle, string $jwt, array $need = []): array
+    {
+        $queryString = '';
+        !empty($need) && $queryString = '&need[]=' . implode('&need[]=', $need);
+        $portalIdOrTitle && $queryString .= '&instance=' . $portalIdOrTitle;
+        $res = $this->client->get("{$this->userUrl}/post-login?jwt=" . $jwt . $queryString, []);
+
+        if (200 != $res->getStatusCode()) {
+            return [];
+        }
+
+        return json_decode($res->getBody(), true);
+    }
+
+    public function isCourseAuthor($portalIdOrTitle, string $jwt): bool
+    {
+        $account = $this->postLogin($portalIdOrTitle, $jwt, ['courseAuthor']);
+
+        return $account['accounts'][0]['courseAuthor'] ?? false;
+    }
 }
