@@ -8,9 +8,12 @@ use RuntimeException;
 
 class ExploreClientTest extends UtilCoreClientsTestCase
 {
+    /**
+     * @runInSeparateProcess
+     */
     public function testCanAccess()
     {
-        $c = $this->getContainer(true);
+        $c = $this->getContainer();
         $c->extend('client', function () use ($c) {
             $client =
                 $this->getMockBuilder(Client::class)
@@ -42,9 +45,12 @@ class ExploreClientTest extends UtilCoreClientsTestCase
         $this->assertTrue($client->canAccess(100, 1000, 'foo'));
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testCanAccessWithException()
     {
-        $c = $this->getContainer(true);
+        $c = $this->getContainer();
         $c->extend('client', function () {
             $client =
                 $this->getMockBuilder(Client::class)
@@ -71,9 +77,12 @@ class ExploreClientTest extends UtilCoreClientsTestCase
         }
     }
 
+    /**
+     * @runInSeparateProcess
+     */
     public function testGetLearningObject()
     {
-        $c = $this->getContainer(true);
+        $c = $this->getContainer();
         $c->extend('client', function () use ($c) {
             $httpClient = $this
                 ->getMockBuilder(Client::class)

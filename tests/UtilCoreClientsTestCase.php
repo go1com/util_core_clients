@@ -3,7 +3,6 @@
 namespace go1\clients\tests;
 
 use Doctrine\Common\Cache\ArrayCache;
-use go1\clients\ExploreClient;
 use go1\clients\UtilCoreClientServiceProvider;
 use go1\util\Service;
 use go1\util\tests\UtilCoreTestCase;
