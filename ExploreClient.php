@@ -3,7 +3,7 @@
 namespace go1\clients;
 
 use GuzzleHttp\Client;
-use RuntimeException;
+use stdClass;
 
 class ExploreClient
 {
@@ -18,23 +18,31 @@ class ExploreClient
 
     public function canAccess(int $portalId, int $loId, string $authorization = ''): bool
     {
+        $response = $this->getLearningObject($portalId, $loId, $authorization, ['id']);
+
+        return $response ? true : false;
+    }
+
+    public function getLearningObject(int $portalId, int $loId, string $authorization = '', array $fields = null): ?stdClass
+    {
+        $query = [
+            'admin'  => 1,
+            'portal' => $portalId,
+            'id'     => [$loId],
+        ];
+
+        $fields && $query + $fields;
         $response = $this->httpClient->get("$this->exploreUrl/lo", [
-            'headers'     => [
+            'headers' => [
                 'Authorization' => $authorization,
             ],
-            'query'       => [
-                'admin'  => 1,
-                'field'  => ['id', 'realm'],
-                'portal' => $portalId,
-                'id'     => [$loId],
-            ],
+            'query'   => $query,
         ]);
 
         if (200 == $response->getStatusCode()) {
-            $response = json_decode($response->getBody()->getContents());
-            return ($response->total) ? true : false;
+            return json_decode($response->getBody()->getContents())->hits[0] ?? null;
         }
 
-        return false;
+        return null;
     }
 }
