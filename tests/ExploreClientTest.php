@@ -113,4 +113,41 @@ class ExploreClientTest extends UtilCoreClientsTestCase
         $client = $c['go1.client.explore'];
         $client->getLearningObject(1, 2);
     }
+
+    public function testGetLearningObjects()
+    {
+        $c = $this->getContainer();
+        $c->extend('client', function () use ($c) {
+            $httpClient = $this
+                ->getMockBuilder(Client::class)
+                ->disableOriginalConstructor()
+                ->setMethods(['get'])
+                ->getMock();
+
+            $httpClient
+                ->expects($this->any())
+                ->method('get')
+                ->willReturnCallback(function (string $url, array $options) use ($c) {
+                    $this->assertEquals("{$c['explore_url']}/lo", $url);
+                    $this->assertEquals(1, $options['query']['portal']);
+                    $this->assertEquals(2, $options['query']['id'][0]);
+
+                    return new Response(200, [], json_encode([
+                        'total' => 2,
+                        'hits'  => [
+                            [
+                                'id' => 518526,
+                            ],
+                            [
+                                'id' => 518527,
+                            ],
+                        ]]));
+                });
+
+            return $httpClient;
+        });
+
+        $client = $c['go1.client.explore'];
+        $client->getLearningObject(1, 2);
+    }
 }
