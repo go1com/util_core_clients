@@ -18,17 +18,23 @@ class ExploreClient
 
     public function canAccess(int $portalId, int $loId, string $authorization = ''): bool
     {
-        $response = $this->getLearningObject($portalId, $loId, $authorization, ['id']);
-
+        $response = $this->getLearningObjects($portalId, [$loId], $authorization, ['id']);
         return $response ? true : false;
     }
 
     public function getLearningObject(int $portalId, int $loId, string $authorization = '', array $fields = null): ?stdClass
     {
+        $response = $this->getLearningObjects($portalId, [$loId], $authorization, $fields);
+
+        return $response->hits[0] ?? null;
+    }
+
+    public function getLearningObjects(int $portalId, array $loIds = [], string $authorization = '', array $fields = null): ?stdClass
+    {
         $query = [
             'admin'  => 1,
             'portal' => $portalId,
-            'id'     => [$loId],
+            'id'     => $loIds,
         ];
 
         $fields && $query + $fields;
@@ -40,7 +46,7 @@ class ExploreClient
         ]);
 
         if (200 == $response->getStatusCode()) {
-            return json_decode($response->getBody()->getContents())->hits[0] ?? null;
+            return json_decode($response->getBody()->getContents()) ?? null;
         }
 
         return null;
