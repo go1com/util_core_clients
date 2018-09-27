@@ -112,4 +112,39 @@ class MqCoreClientsTest extends UtilCoreClientsTestCase
         $queue = $container['go1.client.mq'];
         $queue->publish(['foo' => 'bar'], 'foo.bar');
     }
+
+    public function testContextEmbedded()
+    {
+        $container = new Container(['accounts_name' => 'accounts.test']);
+        $container
+            ->register(new UtilCoreServiceProvider)
+            ->register(new UtilCoreClientServiceProvider, ['queueOptions' => Service::queueOptions()])
+            ->extend('go1.client.mq', function (MqClient $queue) {
+                $channel = $this
+                    ->getMockBuilder(AMQPChannel::class)
+                    ->disableOriginalConstructor()
+                    ->setMethods(['queue'])
+                    ->getMock();
+
+                $timestamp = time();
+                $channel
+                    ->expects($this->any())
+                    ->method('queue')
+                    ->willReturnCallback(function ($body, string $routingKey, string $context) use ($timestamp) {
+                        $this->assertEquals('foo.bar', $routingKey);
+                    });
+
+                return $queue;
+            });
+
+        /* @var $queue MqClient */
+        $queue = $container['go1.client.mq'];
+        try {
+            $queue->queue(['embedded' => 'test'], 'foo.bar', ['embedded' => 'test']);
+            $this->assertFalse(true);
+        }
+        catch (Exception $e) {
+            $this->assertEquals($e->getMessage(), "Embedded already exists.");
+        }
+    }
 }

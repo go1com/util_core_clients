@@ -96,7 +96,7 @@ class MqClient
 
     public function queue($body, string $routingKey, array $context = [], $exchange = '')
     {
-        $body = is_scalar($body) ? json_decode($body) : $body;
+        $body = is_scalar($body) ? json_decode($body) : json_decode(json_encode($body));
         $this->processMessage($body, $routingKey);
 
         if ($request = $this->currentRequest()) {
@@ -107,6 +107,15 @@ class MqClient
             $context['app'] = $service;
         }
         $context[static::CONTEXT_TIMESTAMP] = $context[static::CONTEXT_TIMESTAMP] ?? time();
+
+        if (isset($context['embedded'])) {
+            if (isset($body->embedded)) {
+                throw new Exception('Embedded already exists.');
+            }
+
+            $body->embedded = $context['embedded'];
+            unset($context['embedded']);
+        }
 
         if (!$exchange) {
             $body = json_encode(['routingKey' => $routingKey, 'body' => $body]);
