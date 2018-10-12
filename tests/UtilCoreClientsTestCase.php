@@ -32,7 +32,7 @@ class UtilCoreClientsTestCase extends UtilCoreTestCase
             ],
         ]);
 
-        $serviceNames = ['lo', 'user', 'mail', 'portal', 'currency', 'rules', 'sms', 'graphin', 's3', 'realtime', 'explore'];
+        $serviceNames = ['lo', 'user', 'mail', 'portal', 'currency', 'rules', 'sms', 'graphin', 's3', 'realtime', 'explore', 'event'];
         foreach ($serviceNames as $serviceName) {
             $container[$serviceName . '_url'] = Service::url($serviceName, 'qa');
         }
