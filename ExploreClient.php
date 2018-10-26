@@ -29,12 +29,13 @@ class ExploreClient
         return $response->hits[0] ?? null;
     }
 
-    public function getLearningObjects(int $portalId, array $loIds = [], string $authorization = '', array $fields = null): ?stdClass
+    public function getLearningObjects(int $portalId, array $loIds = [], string $authorization = '', array $fields = null, int $limit = 20): ?stdClass
     {
         $query = [
             'admin'  => 1,
             'portal' => $portalId,
             'id'     => $loIds,
+            'limit'  => $limit
         ];
 
         $fields && $query + $fields;
