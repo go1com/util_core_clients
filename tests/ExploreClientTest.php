@@ -2,6 +2,7 @@
 
 namespace go1\clients\tests;
 
+use go1\util\collection\PortalCollectionConfiguration;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use RuntimeException;
@@ -97,6 +98,8 @@ class ExploreClientTest extends UtilCoreClientsTestCase
                     $this->assertEquals("{$c['explore_url']}/lo", $url);
                     $this->assertEquals(1, $options['query']['portal']);
                     $this->assertEquals(2, $options['query']['id'][0]);
+                    $this->assertEquals(['id', 'title'], $options['query']['field']);
+                    $this->assertEquals([PortalCollectionConfiguration::CUSTOM], $options['query']['collection']);
 
                     return new Response(200, [], json_encode([
                         'total' => 1,
@@ -111,7 +114,7 @@ class ExploreClientTest extends UtilCoreClientsTestCase
         });
 
         $client = $c['go1.client.explore'];
-        $client->getLearningObject(1, 2);
+        $client->getLearningObject(1, 2, 'jwt', ['field' => ['id', 'title'], 'collection' => [PortalCollectionConfiguration::CUSTOM]]);
     }
 
     public function testGetLearningObjects()
