@@ -15,6 +15,10 @@ class UtilCoreClientServiceProvider implements ServiceProviderInterface
             return new PortalClient($c['client'], $c['portal_url'], $c['cache']);
         };
 
+        $c['go1.client.policy'] = function (Container $c) {
+            return new PolicyClient($c['client'], $c['policy_url']);
+        };
+
         $c['go1.client.user'] = function (Container $c) {
             return new UserClient($c['client'], $c['user_url'], $c['go1.client.mq']);
         };
