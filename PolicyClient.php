@@ -17,13 +17,14 @@ class PolicyClient
         $this->policyUrl = $policyUrl;
     }
 
-    public function createPolicy($portalNameOrId, string $hostEntityType, int $hostEntityId, array $items):? stdClass
+    public function createPolicy($portalNameOrId, string $hostEntityType, int $hostEntityId, array $items, array $query = []):? stdClass
     {
         $response = $this->httpClient->request('PUT', "$this->policyUrl/{$portalNameOrId}/{$hostEntityType}/{$hostEntityId}/items", [
             'headers' => [
                 'Content-Type'  => 'application/json',
                 'Authorization' => 'Bearer ' . UserHelper::ROOT_JWT,
             ],
+            'query' => $query,
             'body'    => json_encode($items),
         ]);
 
