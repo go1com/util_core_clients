@@ -22,23 +22,22 @@ class ExploreClient
         return $response ? true : false;
     }
 
-    public function getLearningObject(int $portalId, int $loId, string $authorization = '', array $fields = null): ?stdClass
+    public function getLearningObject(int $portalId, int $loId, string $authorization = '', array $query = []): ?stdClass
     {
-        $response = $this->getLearningObjects($portalId, [$loId], $authorization, $fields);
+        $response = $this->getLearningObjects($portalId, [$loId], $authorization, $query);
 
         return $response->hits[0] ?? null;
     }
 
-    public function getLearningObjects(int $portalId, array $loIds = [], string $authorization = '', array $fields = null, int $limit = 20): ?stdClass
+    public function getLearningObjects(int $portalId, array $loIds = [], string $authorization = '', array $query = [], int $limit = 20): ?stdClass
     {
-        $query = [
+        $query = $query + [
             'admin'  => 1,
             'portal' => $portalId,
             'id'     => $loIds,
             'limit'  => $limit
         ];
 
-        $fields && $query + $fields;
         $response = $this->httpClient->get("$this->exploreUrl/lo", [
             'headers' => [
                 'Authorization' => $authorization,
