@@ -9,12 +9,13 @@
     }
   },
   "require":           {
-    "php":                     "^7.2",
-    "guzzlehttp/guzzle":       "^6.0",
-    "doctrine/cache":          "^v1.6.0",
-    "ramsey/uuid":             "^3.4",
-    "go1/util_core":           "dev-master",
-    "php-amqplib/php-amqplib": "^2.6",
-    "symfony/property-access": "^4.0 | ^3.4"
+    "php":                        "^7.2",
+    "guzzlehttp/guzzle":          "^6.0",
+    "doctrine/cache":             "^v1.6.0",
+    "ramsey/uuid":                "^3.4",
+    "go1/util_core":              "dev-master",
+    "go1/util_publishing_event":  "dev-master",
+    "php-amqplib/php-amqplib":    "^2.6",
+    "symfony/property-access":    "^4.0 | ^3.4"
   }
 }

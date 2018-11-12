@@ -4,6 +4,7 @@ namespace go1\clients;
 
 use Exception;
 use go1\util\AccessChecker;
+use go1\util\publishing\event\EventInterface;
 use go1\util\queue\Queue;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
@@ -78,6 +79,9 @@ class MqClient
         $this->channel()->close();
     }
 
+    /**
+     * @deprecated see self::publishEvent()
+     */
     public function publish($body, string $routingKey, array $context = [])
     {
         $this->queue($body, $routingKey, $context, 'events');
@@ -169,5 +173,47 @@ class MqClient
             $user = $accessChecker->validUser($request);
             $user && $context[self::CONTEXT_ACTOR_ID] = $user->id;
         }
+    }
+
+    public function publishEvent(EventInterface $event, $exchange = 'events')
+    {
+        $context = $event->getContext();
+        if ($request = $this->currentRequest()) {
+            if (!isset($context[self::CONTEXT_REQUEST_ID])) {
+                if ($requestId = $request->headers->get('X-Request-Id')) {
+                    $event->addContext(self::CONTEXT_REQUEST_ID, $requestId);
+                }
+            }
+
+            $accessChecker = new AccessChecker;
+            if (!isset($context[self::CONTEXT_ACTOR_ID]) && $accessChecker) {
+                $user = $accessChecker->validUser($request);
+                $user && $event->addContext(self::CONTEXT_ACTOR_ID, $user->id);
+            }
+        }
+
+        if (!isset($context['app']) && ($service = getenv('SERVICE_80_NAME'))) {
+            $event->addContext('app', $service);
+        }
+
+        if (!isset($context[static::CONTEXT_TIMESTAMP])) {
+            $event->addContext(static::CONTEXT_TIMESTAMP, time());
+        }
+
+        $properties = [
+            'content_type'        => 'application/json',
+            'application_headers' => new AMQPTable($event->getContext())
+        ];
+        $this->channel()->basic_publish(
+            new AMQPMessage(json_encode($event->getPayload()), $properties),
+            $exchange,
+            $event->getSubject()
+        );
+
+        $this->logger->debug($event->getPayload(), [
+            'exchange'   => $exchange,
+            'routingKey' => $event->getSubject(),
+            'context'    => $event->getContext()
+        ]);
     }
 }
