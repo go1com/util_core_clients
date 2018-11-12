@@ -207,9 +207,10 @@ class MqClient
             $event->getSubject()
         );
 
-        $this->logger->debug($event->getPayload(), [
+        $this->logger->debug('published an event', [
             'exchange'   => $exchange,
             'routingKey' => $event->getSubject(),
+            'payload'    => $event->getPayload(),
             'context'    => $event->getContext()
         ]);
     }
