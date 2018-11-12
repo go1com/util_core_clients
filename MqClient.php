@@ -79,9 +79,6 @@ class MqClient
         $this->channel()->close();
     }
 
-    /**
-     * @deprecated see self::publishEvent()
-     */
     public function publish($body, string $routingKey, array $context = [])
     {
         $this->queue($body, $routingKey, $context, 'events');
