@@ -172,7 +172,7 @@ class MqClient
         }
     }
 
-    public function publishEvent(EventInterface $event, $exchange = 'events')
+    public function publishEvent(EventInterface $event, string $exchange = 'events')
     {
         $context = $event->getContext();
         if ($request = $this->currentRequest()) {
