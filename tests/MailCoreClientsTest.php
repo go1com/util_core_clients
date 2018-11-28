@@ -20,7 +20,7 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
         /** @var MailClient $client */
         $container = $this->getContainer();
         $client = $container['go1.client.mail'];
-        $portalId = $this->createPortal($this->db, [
+        $portalId = $this->createPortal($this->go1, [
             'title' => $portalName = 'foo.bar',
             'data'  => [
                 'configuration' => [PortalHelper::FEATURE_CUSTOM_SMTP => true],
@@ -28,7 +28,7 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
         ]);
 
         $client
-            ->instance($this->db, $portalName)
+            ->instance($this->go1, $portalName)
             ->post('foo@bar.com', new MailTemplate('id', 'subject', 'body', 'html'));
 
         $this->assertArrayHasKey(Queue::DO_MAIL_SEND, $this->queueMessages);
@@ -57,10 +57,10 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
         /** @var MailClient $client */
         $container = $this->getContainer();
         $client = $container['go1.client.mail'];
-        $portalId = $this->createPortal($this->db, ['title' => $portalName = 'foo.bar']);
+        $portalId = $this->createPortal($this->go1, ['title' => $portalName = 'foo.bar']);
 
         $client
-            ->instance($this->db, $portalName)
+            ->instance($this->go1, $portalName)
             ->post('foo@bar.com', new MailTemplate('id', 'subject', 'body', 'html'));
 
         $this->assertArrayHasKey(Queue::DO_MAIL_SEND, $this->queueMessages);

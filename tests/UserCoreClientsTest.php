@@ -112,7 +112,7 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
                ->method('get')
                ->willReturnCallback(function ($url, $options) use (&$urlResult, $portalName, $payload, $id) {
                    if (-1 < strpos($url, 'account/masquerade')) {
-                       return new Response(200, ['Content-Type' => 'application/json'], json_encode(UserHelper::load($this->db, $id)));
+                       return new Response(200, ['Content-Type' => 'application/json'], json_encode(UserHelper::load($this->go1, $id)));
                    }
                    $urlResult = $url;
                    if (!is_null($portalName)) {
@@ -135,14 +135,14 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
     {
         $urlResult = '';
 
-        $userId = $this->createUser($this->db, [
+        $userId = $this->createUser($this->go1, [
             'uuid'       => $uuid,
             'mail'       => $email = 'dawn.do@test.com',
             'instance'   => 'accounts-dev.gocatalyze.com',
             'profile_id' => $profileId,
         ]);
 
-        $user = UserHelper::load($this->db, $userId);
+        $user = UserHelper::load($this->go1, $userId);
         $payload = $this->createPayload($user);
         $client = $this->fakeClient($urlResult, $portalName, $this->createPayload($user), $userId);
         $userClient = $this->fakeUserClient($uuid, $portalName);
@@ -172,7 +172,7 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
         $client->expects($this->any())
                ->method('get')
                ->willReturnCallback(function ($client, $userUrl, $profileId) use ($id) {
-                   return new Response(200, ['Content-Type' => 'application/json'], json_encode(UserHelper::load($this->db, $id)));
+                   return new Response(200, ['Content-Type' => 'application/json'], json_encode(UserHelper::load($this->go1, $id)));
                });
 
         return $client;
@@ -183,14 +183,14 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
     {
         $urlResult = '';
 
-        $userId = $this->createUser($this->db, [
+        $userId = $this->createUser($this->go1, [
             'uuid'       => $uuid,
             'mail'       => $email = 'dawn.do@test.com',
             'instance'   => 'accounts-dev.gocatalyze.com',
             'profile_id' => $profileId,
         ]);
 
-        $user = UserHelper::load($this->db, $userId);
+        $user = UserHelper::load($this->go1, $userId);
         $payload = $this->createPayload($user);
 
         $client = $this->fakeClient($urlResult, $portalName, $this->createPayload($user), $userId);
