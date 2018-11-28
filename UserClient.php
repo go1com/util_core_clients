@@ -73,14 +73,14 @@ class UserClient
         return json_decode($body);
     }
 
-    public function register($accountsName, $instance, $mail, $pass, $first, $last, $data = null, $jwtExpire = '+ 1 month')
+    public function register($accountsName, $portalName, $mail, $pass, $first, $last, $data = null, $jwtExpire = '+ 1 month', array $options = [])
     {
-        return $this->client->post("$this->userUrl/account", [
+        return $this->client->post("$this->userUrl/account" , $options + [
             'http_errors' => false,
             'headers'     => ['JWT-Expire-Time' => $jwtExpire],
             'json'        => array_filter([
                 'instance'   => $accountsName,
-                'portal'     => $instance,
+                'portal'     => $portalName,
                 'email'      => $mail,
                 'password'   => $pass ?: Uuid::uuid4()->toString(),
                 'random'     => !$pass,
