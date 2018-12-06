@@ -22,5 +22,8 @@
   },
   "suggest":           {
     "go1/util_publishing_event": "Enable experiment on better event publishing. Branch: dev-master"
+  },
+  "scripts":           {
+    "lint": "php-cs-fixer fix --using-cache=no --rules='{\"braces\": {\"allow_single_line_closure\": true}}' ."
   }
 }

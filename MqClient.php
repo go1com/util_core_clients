@@ -49,8 +49,7 @@ class MqClient
         AccessChecker $accessChecker = null,
         Container $container = null,
         Request $request = null
-    )
-    {
+    ) {
         $this->host = $host;
         $this->port = $port;
         $this->user = $user;
@@ -142,8 +141,8 @@ class MqClient
                 (
                     is_array($body)
                     && !(2 === count(array_filter($body, function ($value, $key) {
-                            return (in_array($key, ['id', 'original']) && $value);
-                        }, ARRAY_FILTER_USE_BOTH)))
+                        return (in_array($key, ['id', 'original']) && $value);
+                    }, ARRAY_FILTER_USE_BOTH)))
                 )
                 ||
                 (

@@ -10,7 +10,6 @@ use RuntimeException;
 
 class PolicyClientTest extends UtilCoreClientsTestCase
 {
-
     public function testCreatePolicyWithException()
     {
         /** @var PolicyClientTest $client */

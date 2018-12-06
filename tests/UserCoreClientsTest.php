@@ -154,8 +154,7 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
 
         if (is_null($portalName)) {
             $this->assertEquals($rs, $jwt);
-        }
-        else {
+        } else {
             $this->assertNotEquals($rs, $jwt);
         }
 
@@ -203,8 +202,7 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
 
         if (is_null($portalName)) {
             $this->assertEquals($rs, $jwt);
-        }
-        else {
+        } else {
             $this->assertNotEquals($rs, $jwt);
         }
 

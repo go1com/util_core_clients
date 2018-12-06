@@ -14,8 +14,7 @@ class S3Client
     public function __construct(
         Client $client,
         string $s3Url
-    )
-    {
+    ) {
         $this->client = $client;
         $this->s3Url = $s3Url;
     }

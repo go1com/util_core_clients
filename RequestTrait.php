@@ -53,8 +53,7 @@ trait RequestTrait
             }
 
             return $this->client->request($method, $url, $options);
-        }
-        catch (BadResponseException $e) {
+        } catch (BadResponseException $e) {
             if ($this->logger) {
                 $this->logger->error('Failed to send request: ' . $e->getMessage());
             }
@@ -69,8 +68,7 @@ trait RequestTrait
                 ];
 
                 $this->mqClient->publish($msg, Queue::DO_CONSUMER_HTTP_REQUEST);
-            }
-            else {
+            } else {
                 if ($this->queueClient) {
                     $this
                         ->queueClient
