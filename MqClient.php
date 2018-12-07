@@ -109,6 +109,7 @@ class MqClient
         $context[static::CONTEXT_TIMESTAMP] = $context[static::CONTEXT_TIMESTAMP] ?? time();
 
         if (!$exchange) {
+            # TODO: Consumer will need parse this. For saving time, we can move routingKey to msg.headers[X-ROUTING-KEY]
             $body = json_encode(['routingKey' => $routingKey, 'body' => $body]);
             $routingKey = Queue::WORKER_QUEUE_NAME;
         }
