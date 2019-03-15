@@ -52,6 +52,38 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
     /**
      * @runInSeparateProcess
      */
+    public function testSendInMailBulk()
+    {
+        /** @var MailClient $client */
+        $container = $this->getContainer();
+        $client = $container['go1.client.mail'];
+        $portalId = $this->createPortal($this->go1, ['title' => $portalName = 'foo.bar']);
+
+        $queueOptions = ['custom' => Queue::DO_MAIL_BULK_SEND];
+
+        $client
+            ->instance($this->go1, $portalName)
+            ->post('foo@bar.com', new MailTemplate('id', 'subject', 'body', 'html'), [], [], [], [], [], [], $queueOptions);
+        $this->assertArrayHasKey(Queue::DO_MAIL_BULK_SEND, $this->queueMessages);
+        $this->assertCount(1, $this->queueMessages[Queue::DO_MAIL_BULK_SEND]);
+        $this->assertEquals(
+            [
+                'from_instance' => $portalId,
+                'recipient'     => 'foo@bar.com',
+                'subject'       => 'subject',
+                'body'          => 'body',
+                'html'          => 'html',
+                'context'       => [],
+                'attachments'   => [],
+                'options'       => [],
+            ],
+            $this->queueMessages[Queue::DO_MAIL_BULK_SEND][0]
+        );
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
     public function testNoSmtpPortal()
     {
         /** @var MailClient $client */
