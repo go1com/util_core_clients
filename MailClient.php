@@ -50,9 +50,10 @@ class MailClient
         $attachments = [],
         $cc = [],
         $bcc = [],
-        array $queueContext = [])
+        array $queueContext = [],
+        array $queueOptions = [])
     {
-        $this->send(null, $recipient, $template->getSubject(), $template->getBody(), $template->getHtml(), $context, $options, $attachments, $cc, $bcc, $queueContext);
+        $this->send(null, $recipient, $template->getSubject(), $template->getBody(), $template->getHtml(), $context, $options, $attachments, $cc, $bcc, $queueContext, $queueOptions);
     }
 
     /**
@@ -69,7 +70,8 @@ class MailClient
         $attachments = [],
         $cc = [],
         $bcc = [],
-        array $queueContext = [])
+        array $queueContext = [],
+        array $queueOptions = [])
     {
         $data = array_filter(['cc' => $cc, 'bcc' => $bcc]);
 
@@ -81,6 +83,8 @@ class MailClient
             $data['from_instance'] = $this->portalId;
         }
 
+        $routingKey = isset($queueOptions['custom']) ? $queueOptions['custom'] : Queue::DO_MAIL_SEND;
+
         $data += [
             'recipient'   => $recipient,
             'subject'     => $subject,
@@ -91,7 +95,7 @@ class MailClient
             'options'     => $options,
         ];
 
-        $this->queue->queue($data, Queue::DO_MAIL_SEND, $queueContext);
+        $this->queue->queue($data, $routingKey, $queueContext);
     }
 
     public function template(
