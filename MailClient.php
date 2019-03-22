@@ -85,6 +85,8 @@ class MailClient
 
         $routingKey = isset($queueOptions['custom']) ? $queueOptions['custom'] : Queue::DO_MAIL_SEND;
 
+        $func = $routingKey == Queue::DO_MAIL_SEND ? 'queue' : 'publish';
+
         $data += [
             'recipient'   => $recipient,
             'subject'     => $subject,
@@ -95,7 +97,7 @@ class MailClient
             'options'     => $options,
         ];
 
-        $this->queue->queue($data, $routingKey, $queueContext);
+        $this->queue->$func($data, $routingKey, $queueContext);
     }
 
     public function template(
