@@ -39,6 +39,10 @@ class UtilCoreClientServiceProvider implements ServiceProviderInterface
             return new ExploreClient($c['client'], $c['explore_url']);
         };
 
+        $c['go1.client.feature-toggle'] = function (Container $c) {
+            return new FeatureToggleClient($c['client'], $c['featuretoggle_url']);
+        };
+
         $c['go1.client.s3Video'] = function (Container $c) {
             $o = $c['videoS3Options'];
             $args = [
