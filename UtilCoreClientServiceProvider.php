@@ -2,7 +2,7 @@
 
 namespace go1\clients;
 
-use Aws\Credentials\Credentials;
+use Aws\Credentials\CredentialProvider;
 use Aws\S3\S3Client;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
@@ -48,7 +48,7 @@ class UtilCoreClientServiceProvider implements ServiceProviderInterface
             $args = [
                 'region'      => $o['region'],
                 'version'     => $o['version'],
-                'credentials' => new Credentials($o['key'], $o['secret']),
+                'credentials' => CredentialProvider::defaultProvider(),
             ];
             if (getenv('MONOLITH')) {
                 // https://github.com/minio/cookbook/blob/master/docs/aws-sdk-for-php-with-minio.md
