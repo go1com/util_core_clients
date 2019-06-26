@@ -31,12 +31,17 @@ class ExploreClient
 
     public function getLearningObjects(int $portalId, array $loIds = [], string $authorization = '', array $query = [], int $limit = 20): ?stdClass
     {
-        $query = $query + [
+        $default = [
             'admin'  => 1,
             'portal' => $portalId,
-            'id'     => $loIds,
             'limit'  => $limit
         ];
+
+        if (!empty($loIds)) {
+            $default['id'] = $loIds;
+        }
+
+        $query = $query + $default;
 
         $response = $this->httpClient->get("$this->exploreUrl/lo", [
             'headers' => [
