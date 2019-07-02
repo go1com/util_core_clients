@@ -19,6 +19,7 @@ class ExploreClient
     public function canAccess(int $portalId, int $loId, string $authorization = ''): bool
     {
         $response = $this->getLearningObjects($portalId, [$loId], $authorization, ['id']);
+
         return $response ? true : false;
     }
 
