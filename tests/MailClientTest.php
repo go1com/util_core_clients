@@ -71,21 +71,8 @@ class MailClientTest extends TestCase
     public function testSendWithQueueOptions()
     {
         $mail = $this->getMailClient();
-        $mail->send(
-            '',
-            'user@qa.com',
-            'test subject',
-            'test body',
-            'test <strong>body</strong>',
-            [],// context
-            [], // options
-            [], // attachment
-            [], // cc
-            [], // bcc
-            [], // queueContext
-            [], // queueOptions
-            'events' // exchange
-        );
+        $mail->withQueueExchange('events');
+        $mail->send('', 'user@qa.com', 'test subject', 'test body', 'test <strong>body</strong>');
 
         /** @var AMQPMessage $msg */
         $msg = $this->log[0][0];
