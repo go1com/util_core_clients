@@ -49,7 +49,8 @@ class MqClient
         AccessChecker $accessChecker = null,
         Container $container = null,
         Request $request = null
-    ) {
+    )
+    {
         $this->host = $host;
         $this->port = $port;
         $this->user = $user;
@@ -59,6 +60,11 @@ class MqClient
         $this->container = $container;
         $this->request = $request;
         $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
+    }
+
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
     }
 
     public function channel($exchange = 'events', $type = 'topic'): AMQPChannel
@@ -142,8 +148,8 @@ class MqClient
                 (
                     is_array($body)
                     && !(2 === count(array_filter($body, function ($value, $key) {
-                        return (in_array($key, ['id', 'original']) && $value);
-                    }, ARRAY_FILTER_USE_BOTH)))
+                            return (in_array($key, ['id', 'original']) && $value);
+                        }, ARRAY_FILTER_USE_BOTH)))
                 )
                 ||
                 (
@@ -199,7 +205,7 @@ class MqClient
 
         $properties = [
             'content_type'        => 'application/json',
-            'application_headers' => new AMQPTable($event->getContext())
+            'application_headers' => new AMQPTable($event->getContext()),
         ];
         $this->channel()->basic_publish(
             new AMQPMessage(json_encode($event->getPayload()), $properties),
@@ -211,7 +217,7 @@ class MqClient
             'exchange'   => $exchange,
             'routingKey' => $event->getSubject(),
             'payload'    => $event->getPayload(),
-            'context'    => $event->getContext()
+            'context'    => $event->getContext(),
         ]);
     }
 }
