@@ -14,6 +14,7 @@ class MailClient
     private $queue;
     private $portalName;
     private $portalId;
+    private $queueExchange = '';
 
     public function __construct(MqClient $queue)
     {
@@ -40,6 +41,10 @@ class MailClient
         }
 
         return $this;
+    }
+
+    public function withQueueExchange(string $exchange) {
+        $this->queueExchange = $exchange;
     }
 
     public function post(
@@ -71,8 +76,7 @@ class MailClient
         $cc = [],
         $bcc = [],
         array $queueContext = [],
-        array $queueOptions = [],
-        string $exchange = ''
+        array $queueOptions = []
     ) {
         $data = array_filter(['cc' => $cc, 'bcc' => $bcc]);
 
@@ -96,7 +100,7 @@ class MailClient
 
         $routingKey = isset($queueOptions['custom']) ? $queueOptions['custom'] : Queue::DO_MAIL_SEND;
         ($routingKey == Queue::DO_MAIL_SEND)
-            ? $this->queue->queue($data, $routingKey, $queueContext, $exchange)
+            ? $this->queue->queue($data, $routingKey, $queueContext, $this->queueExchange)
             : $this->queue->publish($data, $routingKey, $queueContext);
     }
 
