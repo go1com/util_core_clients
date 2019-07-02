@@ -11,6 +11,9 @@ use Psr\Log\NullLogger;
 use function func_get_args;
 use function json_decode;
 
+/**
+ * Make sure mail-client publish messages we are expecting to.
+ */
 class MailClientTest extends TestCase
 {
     private $log;
@@ -48,9 +51,6 @@ class MailClientTest extends TestCase
         return new MailClient($queue);
     }
 
-    /**
-     * Just want to see what's being published.
-     */
     public function testLegacySend()
     {
         $mail = $this->getMailClient();
