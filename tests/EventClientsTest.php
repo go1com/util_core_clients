@@ -25,7 +25,7 @@ class EventClientsTest extends UtilCoreClientsTestCase
                 ->expects($this->any())
                 ->method('get')
                 ->willReturnCallback(function (string $url, array $options) use ($c) {
-                    $this->assertContains("{$c['event_url']}/events/1", $url);
+                    $this->assertStringContainsString("{$c['event_url']}/events/1", $url);
 
                     return new Response(200, [], json_encode([
                         "id" => "8",
@@ -66,7 +66,7 @@ class EventClientsTest extends UtilCoreClientsTestCase
                 ->expects($this->any())
                 ->method('get')
                 ->willReturnCallback(function (string $url, array $options) use ($c) {
-                    $this->assertContains("{$c['event_url']}/events/1", $url);
+                    $this->assertStringContainsString("{$c['event_url']}/events/1", $url);
 
                     return new Response(200, [], json_encode([
                         "id" => "8",
@@ -92,11 +92,11 @@ class EventClientsTest extends UtilCoreClientsTestCase
 
     /**
      * @runInSeparateProcess
-     * @expectedException     Exception
-     * @expectedExceptionMessage Event not found
      */
     public function testGetAvailableSeatsWithEventNotFound()
     {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Event not found');
         $c = $this->getContainer();
         $c->extend('client', function () use ($c) {
             $client =
@@ -109,7 +109,7 @@ class EventClientsTest extends UtilCoreClientsTestCase
                 ->expects($this->any())
                 ->method('get')
                 ->willReturnCallback(function (string $url, array $options) use ($c) {
-                    $this->assertContains("{$c['event_url']}/events/1", $url);
+                    $this->assertStringContainsString("{$c['event_url']}/events/1", $url);
 
                     return new Response(200, [], false);
                 });

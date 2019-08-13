@@ -24,7 +24,7 @@ class FeatureToggleClientTest extends UtilCoreClientsTestCase
                 ->expects($this->any())
                 ->method('get')
                 ->willReturnCallback(function (string $url, array $options) use ($c) {
-                    $this->assertContains("{$c['featuretoggle_url']}/feature/groups_management_v2", $url);
+                    $this->assertStringContainsString("{$c['featuretoggle_url']}/feature/groups_management_v2", $url);
 
                     return new Response(200, [], json_encode([
                         'groups_management_v2' => true
