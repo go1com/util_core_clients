@@ -15,6 +15,7 @@ class MailClient
     private $portalName;
     private $portalId;
     private $queueExchange = '';
+    private $customSmtp = false;
 
     public function __construct(MqClient $queue)
     {
@@ -33,8 +34,9 @@ class MailClient
         if ($portal) {
             $client = clone $this;
             $client->portalId = $portal->id;
+            $client->portalName = $portal->title;
             if ($helper->useCustomSMTP($portal)) {
-                $client->portalName = $portal->title;
+                $client->customSmtp = true;
             }
 
             return $client;
@@ -97,6 +99,7 @@ class MailClient
             'attachments' => $attachments, # array of ['name' => STRING, 'url' => STRING]
             'options'     => $options,
         ];
+        $data['custom_smtp'] = $this->customSmtp;
 
         $routingKey = isset($queueOptions['custom']) ? $queueOptions['custom'] : Queue::DO_MAIL_SEND;
         ($routingKey == Queue::DO_MAIL_SEND)
