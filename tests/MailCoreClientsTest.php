@@ -44,6 +44,7 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
                 'context'       => [],
                 'attachments'   => [],
                 'options'       => [],
+                'custom_smtp'   => true,
             ],
             $this->queueMessages[Queue::DO_MAIL_SEND][0]
         );
@@ -68,6 +69,7 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
         $this->assertCount(1, $this->queueMessages[Queue::DO_MAIL_BULK_SEND]);
         $this->assertEquals(
             [
+                'instance'      => 'foo.bar',
                 'from_instance' => $portalId,
                 'recipient'     => 'foo@bar.com',
                 'subject'       => 'subject',
@@ -76,6 +78,7 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
                 'context'       => [],
                 'attachments'   => [],
                 'options'       => [],
+                'custom_smtp'   => false,
             ],
             $this->queueMessages[Queue::DO_MAIL_BULK_SEND][0]
         );
@@ -99,6 +102,7 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
         $this->assertCount(1, $this->queueMessages[Queue::DO_MAIL_SEND]);
         $this->assertEquals(
             [
+                'instance'      => 'foo.bar',
                 'from_instance' => $portalId,
                 'recipient'     => 'foo@bar.com',
                 'subject'       => 'subject',
@@ -107,6 +111,7 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
                 'context'       => [],
                 'attachments'   => [],
                 'options'       => [],
+                'custom_smtp'   => false,
             ],
             $this->queueMessages[Queue::DO_MAIL_SEND][0]
         );
@@ -133,6 +138,7 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
                 'context'     => [],
                 'attachments' => [],
                 'options'     => [],
+                'custom_smtp' => false,
             ],
             $this->queueMessages[Queue::DO_MAIL_SEND][0]
         );
