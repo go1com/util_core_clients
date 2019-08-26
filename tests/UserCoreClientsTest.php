@@ -133,6 +133,27 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
     /** @dataProvider dataGetJwt */
     public function testUuid2jwt(string $apiUrl, int $profileId, string $uuid, string $portalName = null)
     {
+        $clientMock = $this->prophesize(Client::class);
+        $mqClientMock = $this->prophesize(MqClient::class);
+
+        $testSubject = new UserClient(
+            $clientMock->reveal(),
+            $apiUrl,
+            $mqClientMock->reveal()
+        );
+
+        $response = new Response(200, [], json_encode(['jwt' => 'a jwt']));
+        $expectedUrl = implode('/', array_filter([$apiUrl, 'account/current', $uuid, $portalName]));
+        $clientMock->get($expectedUrl, ['http_errors' => false])
+            ->shouldBeCalled()
+            ->willReturn($response);
+
+        $this->assertEquals('a jwt', $testSubject->uuid2jwt($uuid, $portalName));
+    }
+
+    /** @dataProvider dataGetJwt */
+    public function testUuid2jwtLegacy(string $apiUrl, int $profileId, string $uuid, string $portalName = null)
+    {
         $urlResult = '';
 
         $userId = $this->createUser($this->go1, [
@@ -145,7 +166,7 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
         $user = UserHelper::load($this->go1, $userId);
         $payload = $this->createPayload($user);
         $client = $this->fakeClient($urlResult, $portalName, $this->createPayload($user), $userId);
-        $userClient = $this->fakeUserClient($uuid, $portalName);
+        $userClient = $this->fakeUserClient();
 
         $uuid2jwt = new \ReflectionMethod(UserClient::class, 'uuid2jwt');
         $rs = $uuid2jwt->invokeArgs($userClient, [$client, $apiUrl, $uuid, $portalName]);
@@ -161,24 +182,8 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
         $this->assertEquals($urlResult, "{$apiUrl}/account/current/{$uuid}" . (!is_null($portalName) ? "/{$portalName}" : ''));
     }
 
-    private function fakeProfileId2uuid(int $id)
-    {
-        $client = $this->getMockBuilder(UserClient::class)
-                       ->setMethods(['get'])
-                       ->disableOriginalConstructor()
-                       ->getMock();
-
-        $client->expects($this->any())
-               ->method('get')
-               ->willReturnCallback(function ($client, $userUrl, $profileId) use ($id) {
-                   return new Response(200, ['Content-Type' => 'application/json'], json_encode(UserHelper::load($this->go1, $id)));
-               });
-
-        return $client;
-    }
-
     /** @dataProvider dataGetJwt */
-    public function testProfileId2jwt(string $apiUrl, int $profileId, string $uuid, string $portalName = null)
+    public function testProfileId2jwtLegacy(string $apiUrl, int $profileId, string $uuid, string $portalName = null)
     {
         $urlResult = '';
 
@@ -193,7 +198,7 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
         $payload = $this->createPayload($user);
 
         $client = $this->fakeClient($urlResult, $portalName, $this->createPayload($user), $userId);
-        $userClient = $this->fakeUserClient($uuid, $portalName);
+        $userClient = $this->fakeUserClient();
 
         $profileId2jwt = new \ReflectionMethod(UserClient::class, 'profileId2jwt');
         $rs = $profileId2jwt->invokeArgs($userClient, [$client, $apiUrl, $profileId, $portalName]);
