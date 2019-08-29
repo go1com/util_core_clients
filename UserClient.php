@@ -10,6 +10,8 @@ use stdClass;
 
 class UserClient
 {
+    use BearerClientTrait;
+
     private $client;
     private $userUrl;
     private $mqClient;
@@ -123,8 +125,21 @@ class UserClient
         return $this->findUsers($portalName, ['administrator'], $all, $limit, $offset);
     }
 
-    public function uuid2jwt(Client $client, string $userUrl, string $uuid, string $portalName = null)
+    /**
+     * @param string      $uuid
+     * @param string|null $portalName
+     * @return string|bool
+     */
+    public function uuid2jwt($uuid, string $portalName = null)
     {
+        //Backwards compatible signature
+        if ($uuid instanceof Client) {
+            [$client, $userUrl, $uuid, $portalName] = func_get_args();
+        } else {
+            $client = $this->client;
+            $userUrl = $this->userUrl;
+        }
+
         $url = rtrim($userUrl, '/') . "/account/current/{$uuid}" . (!is_null($portalName) ? "/{$portalName}" : '');
         $res = $client->get($url, ['http_errors' => false]);
 
@@ -133,8 +148,21 @@ class UserClient
             : false;
     }
 
-    public function profileId2jwt(Client $client, string $userUrl, int $profileId, string $portalName = null)
+    /**
+     * @param int         $profileId
+     * @param string|null $portalName
+     * @return bool|string
+     */
+    public function profileId2jwt($profileId, string $portalName = null)
     {
+        //Backwards compatible signature
+        if ($profileId instanceof Client) {
+            [$client, $userUrl, $profileId, $portalName] = func_get_args();
+        } else {
+            $client = $this->client;
+            $userUrl = $this->userUrl;
+        }
+
         return ($uuid = (new UserHelper())->profileId2uuid($client, $userUrl, $profileId))
             ? $this->uuid2jwt($client, $userUrl, $uuid, $portalName)
             : false;
