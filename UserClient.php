@@ -134,7 +134,7 @@ class UserClient
     {
         //Backwards compatible signature
         if ($uuid instanceof Client) {
-            [$client, $userUrl, $uuid, $portalName] = func_get_args();
+            [$client, $userUrl, $uuid, $portalName] = array_merge(func_get_args(), [null]);
         } else {
             $client = $this->client;
             $userUrl = $this->userUrl;
@@ -157,7 +157,7 @@ class UserClient
     {
         //Backwards compatible signature
         if ($profileId instanceof Client) {
-            [$client, $userUrl, $profileId, $portalName] = func_get_args();
+            [$client, $userUrl, $profileId, $portalName] = array_merge(func_get_args(), [null]);
         } else {
             $client = $this->client;
             $userUrl = $this->userUrl;
