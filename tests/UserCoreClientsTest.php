@@ -8,6 +8,7 @@ use go1\util\queue\Queue;
 use go1\util\user\UserHelper;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\RequestOptions;
 
 class UserCoreClientsTest extends UtilCoreClientsTestCase
 {
@@ -246,5 +247,33 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
         /** @var UserClient $client */
         $client = $c['go1.client.user'];
         $this->assertTrue($client->isCourseAuthor('qa.mygo1.com', 'jwt'));
+    }
+
+    public function testFindUsers()
+    {
+        $clientMock = $this->prophesize(Client::class);
+        $mqClientMock = $this->prophesize(MqClient::class);
+        $testSubject = new UserClient(
+            $clientMock->reveal(),
+            'http://example.com',
+            $mqClientMock->reveal()
+        );
+
+        $options = [
+            RequestOptions::VERIFY => true,
+        ];
+
+        $response = new Response(200, [], json_encode([1,2]));
+        $clientMock->get(
+            'http://example.com/account/find/foo.mygo1.com/administrator,student?limit=30&offset=2',
+            $options
+        )->shouldBeCalled()
+            ->willReturn($response);
+
+
+        $result = $testSubject->findUsers('foo.mygo1.com', ['administrator', 'student'], true, 30, 2, $options);
+        $this->assertIsIterable($result);
+        $entries = iterator_to_array($result);
+        $this->assertEquals([1, 2], $entries);
     }
 }
