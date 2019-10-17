@@ -75,4 +75,18 @@ class PortalClient
 
         return new MailTemplate($mailKey, $template->subject, $template->body, isset($template->html) ? $template->html : null);
     }
+
+    public function getIndustry(): ?array
+    {
+        try {
+            $res = $this->client->get("{$this->portalUrl}/properties/industry");
+
+            if (200 == $res->getStatusCode()) {
+                return json_decode($res->getBody()->getContents(), true) ?? null;
+            }
+        } catch (BadResponseException $e) {
+        }
+
+        return null;
+    }
 }
