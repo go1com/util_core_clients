@@ -99,30 +99,29 @@ class UserClient
      * @param bool     $all
      * @param int      $limit
      * @param int      $offset
-     * @return stdClass[]
+     * @param array    $options
+     * @return \Generator
      */
-    public function findUsers($portalName, array $roles, $all = false, $limit = 50, $offset = 0)
+    public function findUsers($portalName, array $roles, $all = false, $limit = 50, $offset = 0, array $options = [])
     {
         $roles = implode(',', $roles);
-        while (true) {
-            $res = $this->client->get("{$this->userUrl}/account/find/{$portalName}/{$roles}?limit=$limit&offset=$offset");
+        do {
+            $res = $this->client->get("{$this->userUrl}/account/find/{$portalName}/{$roles}?limit=$limit&offset=$offset", $options);
             $users = json_decode($res->getBody()->getContents());
-            if ($users) {
-                foreach ($users as $user) {
-                    yield $user;
-                }
+            if (json_last_error() !== JSON_ERROR_NONE || !is_array($users)) {
+                return;
+            }
+            foreach ($users as $user) {
+                yield $user;
             }
 
             $offset += $limit;
-            if (!$users || !$all) {
-                break;
-            }
-        }
+        } while($all && count($users) === $limit);
     }
 
-    public function findAdministrators($portalName, $all = false, $limit = 10, $offset = 0)
+    public function findAdministrators($portalName, $all = false, $limit = 10, $offset = 0, array $options = [])
     {
-        return $this->findUsers($portalName, ['administrator'], $all, $limit, $offset);
+        return $this->findUsers($portalName, ['administrator'], $all, $limit, $offset, $options);
     }
 
     /**
