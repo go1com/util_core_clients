@@ -121,7 +121,8 @@ class MqClient
             $routingKey = Queue::WORKER_QUEUE_NAME;
         }
 
-        $this->doQueue($exchange, $routingKey, $body = is_scalar($body) ? $body : json_encode($body), $context);
+        $body = $body = is_scalar($body) ? $body : json_encode($body);
+        $this->doQueue($exchange, $routingKey, $body, $context);
         $this->logger->debug($body, ['exchange' => $exchange, 'routingKey' => $routingKey, 'context' => $context]);
     }
 
