@@ -15,6 +15,8 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use function is_scalar;
+use function json_encode;
 
 class MqClient
 {
@@ -49,8 +51,7 @@ class MqClient
         AccessChecker $accessChecker = null,
         Container $container = null,
         Request $request = null
-    )
-    {
+    ) {
         $this->host = $host;
         $this->port = $port;
         $this->user = $user;
@@ -120,13 +121,17 @@ class MqClient
             $routingKey = Queue::WORKER_QUEUE_NAME;
         }
 
+        $body = $body = is_scalar($body) ? $body : json_encode($body);
+        $this->doQueue($exchange, $routingKey, $body, $context);
+        $this->logger->debug($body, ['exchange' => $exchange, 'routingKey' => $routingKey, 'context' => $context]);
+    }
+
+    protected function doQueue(string $exchange, string $routingKey, string $body, array $context) {
         $this->channel()->basic_publish(
-            new AMQPMessage($body = is_scalar($body) ? $body : json_encode($body), ['content_type' => 'application/json', 'application_headers' => new AMQPTable($context)]),
+            new AMQPMessage($body, ['content_type' => 'application/json', 'application_headers' => new AMQPTable($context)]),
             $exchange,
             $routingKey
         );
-
-        $this->logger->debug($body, ['exchange' => $exchange, 'routingKey' => $routingKey, 'context' => $context]);
     }
 
     private function processMessage($body, string $routingKey)
