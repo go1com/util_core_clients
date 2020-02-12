@@ -4,7 +4,6 @@ namespace go1\clients;
 
 use Aws\Credentials\CredentialProvider;
 use Aws\S3\S3Client;
-use Doctrine\Common\Cache\ApcuCache;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 
