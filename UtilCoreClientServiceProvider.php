@@ -4,6 +4,7 @@ namespace go1\clients;
 
 use Aws\Credentials\CredentialProvider;
 use Aws\S3\S3Client;
+use Doctrine\Common\Cache\ApcuCache;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 
@@ -41,6 +42,10 @@ class UtilCoreClientServiceProvider implements ServiceProviderInterface
 
         $c['go1.client.feature-toggle'] = function (Container $c) {
             return new FeatureToggleClient($c['client'], $c['featuretoggle_url']);
+        };
+
+        $c['go1.client.feature-flag'] = function (Container $c) {
+            return new FeatureFlagClient($c['client'], $c['atlantis_url']);
         };
 
         $c['go1.client.s3Video'] = function (Container $c) {
