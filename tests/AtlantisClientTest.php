@@ -2,11 +2,11 @@
 
 namespace go1\clients\tests;
 
-use go1\clients\FeatureFlagClient;
+use go1\clients\AtlantisClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 
-class FeatureFlagClientTest extends UtilCoreClientsTestCase
+class AtlantisClientTest extends UtilCoreClientsTestCase
 {
     public function testOk()
     {
@@ -37,9 +37,9 @@ class FeatureFlagClientTest extends UtilCoreClientsTestCase
         });
 
         /**
-         * @var $client FeatureFlagClient
+         * @var $client AtlantisClient
          */
-        $client = $c['go1.client.feature-flag'];
+        $client = $c['go1.client.atlantis'];
         $this->assertTrue($client->isEnabled('houston.apex', 'JWT'));
         $this->assertFalse($client->isEnabled('none-existing', 'JWT'));
     }
@@ -67,9 +67,9 @@ class FeatureFlagClientTest extends UtilCoreClientsTestCase
         });
 
         /**
-         * @var $client FeatureFlagClient
+         * @var $client AtlantisClient
          */
-        $client = $c['go1.client.feature-flag'];
+        $client = $c['go1.client.atlantis'];
         $this->assertFalse($client->isEnabled('houston.apex'));
     }
 }

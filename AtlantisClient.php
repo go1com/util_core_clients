@@ -7,7 +7,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use Ramsey\Uuid\Uuid;
 
-class FeatureFlagClient
+class AtlantisClient
 {
     private Client $client;
     private string $serviceUrl;

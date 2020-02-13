@@ -43,8 +43,8 @@ class UtilCoreClientServiceProvider implements ServiceProviderInterface
             return new FeatureToggleClient($c['client'], $c['featuretoggle_url']);
         };
 
-        $c['go1.client.feature-flag'] = function (Container $c) {
-            return new FeatureFlagClient($c['client'], $c['atlantis_url']);
+        $c['go1.client.atlantis'] = function (Container $c) {
+            return new AtlantisClient($c['client'], $c['atlantis_url']);
         };
 
         $c['go1.client.s3Video'] = function (Container $c) {
