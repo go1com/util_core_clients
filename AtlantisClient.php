@@ -18,14 +18,14 @@ class AtlantisClient
         $this->serviceUrl = $serviceUrl;
     }
 
-    public function isEnabled(string $featureName, string $jwt = null): bool
+    public function isEnabled(string $featureName, string $jwt = null, array $options = []): bool
     {
         try {
             $res = $this->client->get("{$this->serviceUrl}/features", [
-                'query' => array_filter([
+                'query' => $options + array_filter([
                     'jwt'    => $jwt,
                     'anonID' => $jwt ? null : Uuid::uuid4()
-                ])
+                ]),
             ]);
 
             $features = json_decode($res->getBody()->getContents());
