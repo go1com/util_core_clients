@@ -10,8 +10,9 @@ class AtlantisClientTest extends UtilCoreClientsTestCase
 {
     public function testOk()
     {
+        $options = ['headers' => ['JWT-Private-Key' => 'INTERNAL']];
         $c = $this->getContainer(true);
-        $c->extend('client', function () use ($c) {
+        $c->extend('client', function () use ($c, $options) {
             $client =
                 $this->getMockBuilder(Client::class)
                     ->setMethods(['get'])
@@ -21,9 +22,9 @@ class AtlantisClientTest extends UtilCoreClientsTestCase
             $client
                 ->expects($this->any())
                 ->method('get')
-                ->willReturnCallback(function (string $url, array $options) use ($c) {
+                ->willReturnCallback(function (string $url, array $o) use ($c, $options) {
                     $this->assertEquals("{$c['atlantis_url']}/features", $url);
-                    $this->assertEquals(['query' => ['jwt' => 'JWT']], $options);
+                    $this->assertEquals($options + ['query' => ['jwt' => 'JWT']], $o);
 
 
                     return new Response(200, [], json_encode([
@@ -40,8 +41,8 @@ class AtlantisClientTest extends UtilCoreClientsTestCase
          * @var $client AtlantisClient
          */
         $client = $c['go1.client.atlantis'];
-        $this->assertTrue($client->isEnabled('houston.apex', 'JWT'));
-        $this->assertFalse($client->isEnabled('none-existing', 'JWT'));
+        $this->assertTrue($client->isEnabled('houston.apex', 'JWT', $options));
+        $this->assertFalse($client->isEnabled('none-existing', 'JWT', $options));
     }
 
     public function testBadRequest()

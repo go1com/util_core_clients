@@ -21,8 +21,8 @@ class AtlantisClient
     public function isEnabled(string $featureName, string $jwt = null, array $options = []): bool
     {
         try {
-            $res = $this->client->get("{$this->serviceUrl}/features", [
-                'query' => $options + array_filter([
+            $res = $this->client->get("{$this->serviceUrl}/features", $options + [
+                'query' => array_filter([
                     'jwt'    => $jwt,
                     'anonID' => $jwt ? null : Uuid::uuid4()
                 ]),
