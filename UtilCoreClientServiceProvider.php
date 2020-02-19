@@ -47,6 +47,14 @@ class UtilCoreClientServiceProvider implements ServiceProviderInterface
             return new AtlantisClient($c['client'], $c['atlantis_url']);
         };
 
+        $c['go1.client.access'] = function (Container $c) {
+            $serviceAuth = $c['serviceAuth'] ?? [];
+            $serviceAuthUserName = $serviceAuth['username'] ?? '';
+            $serviceAuthPassword = $serviceAuth['password'] ?? '';
+
+            return new AccessClient($c['client'], $serviceAuthUserName, $serviceAuthPassword, $c['access_url']);
+        };
+
         $c['go1.client.s3Video'] = function (Container $c) {
             $o = $c['videoS3Options'];
             $args = [

@@ -30,9 +30,13 @@ class UtilCoreClientsTestCase extends UtilCoreTestCase
                 'user' => 'go1',
                 'pass' => 'go1',
             ],
+            'serviceAuth' => [
+                'username' => 'internal',
+                'password' => 'short',
+            ]
         ]);
 
-        $serviceNames = ['lo', 'user', 'mail', 'portal', 'policy', 'currency', 'rules', 'sms', 'graphin', 's3', 'realtime', 'explore', 'event', 'featuretoggle', 'atlantis'];
+        $serviceNames = ['lo', 'user', 'mail', 'portal', 'policy', 'currency', 'rules', 'sms', 'graphin', 's3', 'realtime', 'explore', 'event', 'featuretoggle', 'atlantis', 'access'];
         foreach ($serviceNames as $serviceName) {
             $container[$serviceName . '_url'] = Service::url($serviceName, 'qa');
         }
