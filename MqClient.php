@@ -95,6 +95,7 @@ class MqClient
     public function batchDone()
     {
         if (isset($this->batchExchange)) {
+            $this->channel()->publish_batch();
             $this->channel()->basic_publish(new AMQPMessage('quit'), $this->batchExchange);
             unset($this->batchExchange);
         }
