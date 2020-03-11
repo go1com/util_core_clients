@@ -21,16 +21,17 @@ use function json_encode;
 class MqClient
 {
     /** @var AMQPChannel[] */
-    private $channels;
-    private $host;
-    private $port;
-    private $user;
-    private $pass;
-    private $logger;
-    private $accessChecker;
-    private $container;
-    private $request;
-    private $propertyAccessor;
+    private        $channels;
+    private        $host;
+    private        $port;
+    private        $user;
+    private        $pass;
+    private        $logger;
+    private        $accessChecker;
+    private        $container;
+    private        $request;
+    private        $propertyAccessor;
+    private string $batchExchange;
 
     const CONTEXT_ACTOR_ID    = 'actor_id';
     const CONTEXT_ACTION      = 'action';
@@ -51,7 +52,8 @@ class MqClient
         AccessChecker $accessChecker = null,
         Container $container = null,
         Request $request = null
-    ) {
+    )
+    {
         $this->host = $host;
         $this->port = $port;
         $this->user = $user;
@@ -85,9 +87,24 @@ class MqClient
         $this->channel()->close();
     }
 
-    public function publish($body, string $routingKey, array $context = [])
+    public function batchAdd($body, string $routingKey, array $context = [])
     {
-        $this->queue($body, $routingKey, $context, 'events');
+        $this->publish($body, $routingKey, $context, true);
+    }
+
+    public function batchDone()
+    {
+        if (!$this->batchExchange) {
+            throw new \BadMethodCallException('[batch] unknown exchange');
+        }
+
+        $this->channel()->basic_publish(new AMQPMessage('quit'), $this->batchExchange);
+        unset($this->batchExchange);
+    }
+
+    public function publish($body, string $routingKey, array $context = [], bool $batch = false)
+    {
+        $this->queue($body, $routingKey, $context, 'events', $batch);
     }
 
     private function currentRequest()
@@ -101,7 +118,7 @@ class MqClient
             : null;
     }
 
-    public function queue($body, string $routingKey, array $context = [], $exchange = '')
+    public function queue($body, string $routingKey, array $context = [], $exchange = '', bool $batch = false)
     {
         $body = is_scalar($body) ? json_decode($body) : $body;
         $this->processMessage($body, $routingKey);
@@ -122,16 +139,25 @@ class MqClient
         }
 
         $body = $body = is_scalar($body) ? $body : json_encode($body);
-        $this->doQueue($exchange, $routingKey, $body, $context);
+        $this->doQueue($exchange, $routingKey, $body, $context, $batch);
         $this->logger->debug($body, ['exchange' => $exchange, 'routingKey' => $routingKey, 'context' => $context]);
     }
 
-    protected function doQueue(string $exchange, string $routingKey, string $body, array $context) {
-        $this->channel()->basic_publish(
-            new AMQPMessage($body, ['content_type' => 'application/json', 'application_headers' => new AMQPTable($context)]),
-            $exchange,
-            $routingKey
-        );
+    protected function doQueue(string $exchange, string $routingKey, string $body, array $context, bool $batch = false)
+    {
+        $msg = new AMQPMessage($body, ['content_type' => 'application/json', 'application_headers' => new AMQPTable($context)]);
+
+        $batch
+            ? $this->channel()->batch_basic_publish($msg, $exchange, $routingKey)
+            : $this->channel()->basic_publish($msg, $exchange, $routingKey);
+
+        if ($batch) {
+            if (!isset($this->batchExchange)) {
+                $this->batchExchange = $exchange;
+            } else if ($this->batchExchange != $exchange) {
+                throw new \BadMethodCallException('[batch] unmatch exchange');
+            }
+        }
     }
 
     private function processMessage($body, string $routingKey)

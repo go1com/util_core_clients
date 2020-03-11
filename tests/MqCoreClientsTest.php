@@ -13,11 +13,14 @@ use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 use PhpAmqpLib\Wire\AMQPTable;
 use Pimple\Container;
+use Prophecy\Argument;
+use Prophecy\Prophecy\MethodProphecy;
 use ReflectionClass;
 use ReflectionObject;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use function dump;
 
 class MqCoreClientsTest extends UtilCoreClientsTestCase
 {
@@ -166,5 +169,51 @@ class MqCoreClientsTest extends UtilCoreClientsTestCase
         $queue = $container['go1.client.mq'];
         $event = new Event(['foo' => 'bar'], 'foo.bar');
         $queue->publishEvent($event);
+    }
+
+    public function testBatch()
+    {
+        $container = new Container(['accounts_name' => 'accounts.test']);
+        $container
+            ->register(new UtilCoreServiceProvider)
+            ->register(new UtilCoreClientServiceProvider, ['queueOptions' => Service::queueOptions()])
+            ->extend('go1.client.mq', function (MqClient $queue) {
+                $ch = $this
+                    ->getMockBuilder(AMQPChannel::class)
+                    ->disableOriginalConstructor()
+                    ->setMethods(['basic_publish', 'batch_basic_publish'])
+                    ->getMock();
+
+                $ch
+                    ->expects($this->any())
+                    ->method('batch_basic_publish')
+                    ->willReturnCallback(function (AMQPMessage $msg, string $exchange, string $routingKey) {
+                        $this->assertEquals('{"foo":"bar"}', $msg->getBody());
+                        $this->assertEquals('events', $exchange);
+                        $this->assertEquals('qa-routingKey', $routingKey);
+                    });
+
+                $ch
+                    ->expects($this->any())
+                    ->method('basic_publish')
+                    ->willReturnCallback(function ($msg, $exchange, $routingKey) {
+                        $this->assertEquals('quit', $msg->getBody());
+                        $this->assertEquals('events', $exchange);
+                        $this->assertEquals('', $routingKey);
+                    });
+
+                $rQueue = new ReflectionObject($queue);
+                $rChannels = $rQueue->getProperty('channels');
+                $rChannels->setAccessible(true);
+                $chs['events']['topic'] = $ch;
+                $rChannels->setValue($queue, $chs);
+
+                return $queue;
+            });
+
+        /** @var MqClient $client */
+        $client = $container['go1.client.mq'];
+        $client->batchAdd('{"foo":"bar"}', 'qa-routingKey', []);
+        $client->batchDone();
     }
 }
