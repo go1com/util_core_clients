@@ -94,12 +94,10 @@ class MqClient
 
     public function batchDone()
     {
-        if (!$this->batchExchange) {
-            throw new \BadMethodCallException('[batch] unknown exchange');
+        if (isset($this->batchExchange)) {
+            $this->channel()->basic_publish(new AMQPMessage('quit'), $this->batchExchange);
+            unset($this->batchExchange);
         }
-
-        $this->channel()->basic_publish(new AMQPMessage('quit'), $this->batchExchange);
-        unset($this->batchExchange);
     }
 
     public function publish($body, string $routingKey, array $context = [], bool $batch = false)
