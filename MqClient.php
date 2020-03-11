@@ -89,7 +89,7 @@ class MqClient
 
     public function batchAdd($body, string $routingKey, array $context = [])
     {
-        $this->publish($body, $routingKey, $context, true);
+        $this->queue($body, $routingKey, $context, 'events', true);
     }
 
     public function batchDone()
@@ -100,9 +100,9 @@ class MqClient
         }
     }
 
-    public function publish($body, string $routingKey, array $context = [], bool $batch = false)
+    public function publish($body, string $routingKey, array $context = [])
     {
-        $this->queue($body, $routingKey, $context, 'events', $batch);
+        $this->queue($body, $routingKey, $context, 'events');
     }
 
     private function currentRequest()
