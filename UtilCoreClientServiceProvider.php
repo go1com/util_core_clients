@@ -67,10 +67,6 @@ class UtilCoreClientServiceProvider implements ServiceProviderInterface
             $logger = null;
             $o = $c['queueOptions'];
 
-            if ($c->offsetExists('profiler.do') && $c->offsetGet('profiler.do')) {
-                $logger = $c['profiler.collectors.mq'];
-            }
-
             $currentRequest = $c->offsetExists('request_stack') ? $c['request_stack']->getCurrentRequest() : null;
 
             return new MqClient($o['host'], $o['port'], $o['user'], $o['pass'], $logger, $c['access_checker'], $c, $currentRequest);
