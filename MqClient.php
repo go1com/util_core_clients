@@ -2,6 +2,9 @@
 
 namespace go1\clients;
 
+use DDTrace\Configuration;
+use DDTrace\Format;
+use DDTrace\GlobalTracer;
 use Exception;
 use go1\util\AccessChecker;
 use go1\util\publishing\event\EventInterface;
@@ -15,6 +18,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use function class_exists;
 use function is_scalar;
 use function json_encode;
 
@@ -142,9 +146,20 @@ class MqClient
         $this->logger->debug($body, ['exchange' => $exchange, 'routingKey' => $routingKey, 'context' => $context]);
     }
 
-    protected function doQueue(string $exchange, string $routingKey, string $body, array $context, bool $batch = false)
+    protected function doQueue(string $exchange, string $routingKey, string $body, array $headers, bool $batch = false)
     {
-        $msg = new AMQPMessage($body, ['content_type' => 'application/json', 'application_headers' => new AMQPTable($context)]);
+        $msg = new AMQPMessage($body, ['content_type' => 'application/json', 'application_headers' => new AMQPTable($headers)]);
+
+        // add root span ID.
+        if (class_exists(Configuration::class)) {
+            if (Configuration::get()->isDistributedTracingEnabled()) {
+                $tracer = GlobalTracer::get();
+                if ($span = $tracer->getActiveSpan()) {
+                    $ctx = $span->getContext();
+                    $tracer->inject($ctx, Format::TEXT_MAP, $headers);
+                }
+            }
+        }
 
         $batch
             ? $this->channel()->batch_basic_publish($msg, $exchange, $routingKey)
