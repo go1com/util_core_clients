@@ -148,8 +148,6 @@ class MqClient
 
     protected function doQueue(string $exchange, string $routingKey, string $body, array $headers, bool $batch = false)
     {
-        $msg = new AMQPMessage($body, ['content_type' => 'application/json', 'application_headers' => new AMQPTable($headers)]);
-
         // add root span ID.
         if (class_exists(Configuration::class)) {
             if (Configuration::get()->isDistributedTracingEnabled()) {
@@ -160,6 +158,8 @@ class MqClient
                 }
             }
         }
+        
+        $msg = new AMQPMessage($body, ['content_type' => 'application/json', 'application_headers' => new AMQPTable($headers)]);
 
         $batch
             ? $this->channel()->batch_basic_publish($msg, $exchange, $routingKey)
