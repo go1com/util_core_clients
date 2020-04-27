@@ -27,20 +27,15 @@ class AtlantisClient
 
     public function getFeatureData(string $featureName, string $jwt = null, array $options = []): ?array
     {
-        try {
-            $res = $this->client->get("{$this->serviceUrl}/features", $options + [
-                    'query' => array_filter([
-                        'jwt'    => $jwt,
-                        'anonID' => $jwt ? null : Uuid::uuid4()
-                    ]),
-                ]);
+        $res = $this->client->get("{$this->serviceUrl}/features", $options + [
+            'query' => array_filter([
+                'jwt'    => $jwt,
+                'anonID' => $jwt ? null : Uuid::uuid4()
+            ]),
+        ]);
 
-            $features = json_decode($res->getBody()->getContents(), true);
+        $features = json_decode($res->getBody()->getContents(), true);
 
-            return $features[$featureName] ?? null;
-
-        } catch (BadResponseException $e) {
-            return null;
-        }
+        return $features[$featureName] ?? null;
     }
 }
