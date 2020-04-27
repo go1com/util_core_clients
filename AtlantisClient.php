@@ -20,18 +20,22 @@ class AtlantisClient
 
     public function isEnabled(string $featureName, string $jwt = null, array $options = []): bool
     {
-        try {
-            $res = $this->client->get("{$this->serviceUrl}/features", $options + [
-                'query' => array_filter([
-                    'jwt'    => $jwt,
-                    'anonID' => $jwt ? null : Uuid::uuid4()
-                ]),
-            ]);
+        $feature = $this->getFeatureData($featureName, $jwt, $options);
 
-            $features = json_decode($res->getBody()->getContents());
-            return isset($features->$featureName);
-        } catch (BadResponseException $e) {
-            return false;
-        }
+        return !is_null($feature);
+    }
+
+    public function getFeatureData(string $featureName, string $jwt = null, array $options = []): ?array
+    {
+        $res = $this->client->get("{$this->serviceUrl}/features", $options + [
+            'query' => array_filter([
+                'jwt'    => $jwt,
+                'anonID' => $jwt ? null : Uuid::uuid4()
+            ]),
+        ]);
+
+        $features = json_decode($res->getBody()->getContents(), true);
+
+        return $features[$featureName] ?? null;
     }
 }
