@@ -102,9 +102,7 @@ class MailClient
         $data['custom_smtp'] = $this->customSmtp;
 
         $routingKey = isset($queueOptions['custom']) ? $queueOptions['custom'] : Queue::DO_MAIL_SEND;
-        ($routingKey == Queue::DO_MAIL_SEND)
-            ? $this->queue->queue($data, $routingKey, $queueContext, $this->queueExchange)
-            : $this->queue->publish($data, $routingKey, $queueContext);
+        $this->queue->publish($data, $routingKey, $queueContext);
     }
 
     public function template(
