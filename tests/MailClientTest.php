@@ -60,12 +60,11 @@ class MailClientTest extends TestCase
         $msg = $this->log[0][0];
         $payload = json_decode($msg->getBody());
 
-        $this->assertEquals('', $this->log[0][1], 'no exchange');
-        $this->assertEquals('worker', $this->log[0][2], 'routing of #worker');
-        $this->assertEquals('do.mail.send', $payload->routingKey);
-        $this->assertEquals('user@qa.com', $payload->body->recipient);
-        $this->assertEquals('test subject', $payload->body->subject);
-        $this->assertEquals('test body', $payload->body->body);
+        $this->assertEquals('events', $this->log[0][1], 'no exchange');
+        $this->assertEquals('do.mail.send', $this->log[0][2], 'routing of #worker');
+        $this->assertEquals('user@qa.com', $payload->recipient);
+        $this->assertEquals('test subject', $payload->subject);
+        $this->assertEquals('test body', $payload->body);
     }
 
     public function testSendWithQueueOptions()
