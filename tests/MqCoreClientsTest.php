@@ -117,6 +117,63 @@ class MqCoreClientsTest extends UtilCoreClientsTestCase
         $queue->publish(['foo' => 'bar'], 'foo.bar');
     }
 
+    public function testInjectSessionId()
+    {
+        $container = new Container(['accounts_name' => 'accounts.test']);
+        $container
+            ->register(new UtilCoreServiceProvider)
+            ->register(new UtilCoreClientServiceProvider, ['queueOptions' => Service::queueOptions()])
+            ->extend('go1.client.mq', function (MqClient $queue) {
+                $channel = $this
+                    ->getMockBuilder(AMQPChannel::class)
+                    ->disableOriginalConstructor()
+                    ->setMethods(['basic_publish'])
+                    ->getMock();
+
+                $timestamp = time();
+                $channel
+                    ->expects($this->any())
+                    ->method('basic_publish')
+                    ->willReturnCallback(function (AMQPMessage $message, string $exchange, string $routingKey) use ($timestamp) {
+                        $properties = $message->get_properties();
+
+                        /* @var $context AMQPTable */
+                        $context = $properties['application_headers'];
+                        $context = $context->getNativeData();
+
+                        $this->assertEquals('foo.bar', $routingKey);
+                        $this->assertEquals('events', $exchange);
+                        $this->assertEquals('xxxx', $context['sessionId']);
+                        $this->assertEquals(999, $context['actor_id']);
+                        $this->assertEquals($timestamp, $context[MqClient::CONTEXT_TIMESTAMP]);
+                    });
+
+                $rQueue = new ReflectionObject($queue);
+                $rChannels = $rQueue->getProperty('channels');
+                $rChannels->setAccessible(true);
+                $channels['events']['topic'] = $channel;
+                $rChannels->setValue($queue, $channels);
+
+                return $queue;
+            });
+
+        $req = Request::create("/consume?a=b", 'POST');
+        $req->request->replace([
+            'routingKey' => 'ANY',
+            'body'       => [],
+            'context'    => ['sessionId' => 'xxxx']
+        ]);
+        $req->attributes->set('jwt.payload', $this->getPayload(['id' => 999]));
+
+        $requestStack = new RequestStack();
+        $requestStack->push($req);
+        $container->offsetSet('request_stack', $requestStack);
+
+        /* @var $queue MqClient */
+        $queue = $container['go1.client.mq'];
+        $queue->publish(['foo' => 'bar'], 'foo.bar');
+    }
+
     public function testPublishEvent()
     {
         $container = new Container(['accounts_name' => 'accounts.test']);

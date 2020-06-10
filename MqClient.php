@@ -44,6 +44,7 @@ class MqClient
     const CONTEXT_PORTAL     = 'instance';
     const CONTEXT_INTERNAL   = 'internal';
     const CONTEXT_REQUEST_ID = 'request_id';
+    const CONTEXT_SESSION_ID = 'sessionId';
     const CONTEXT_TIMESTAMP  = 'timestamp';
 
     # For message splitting
@@ -221,6 +222,10 @@ class MqClient
             $user = $accessChecker->validUser($request);
             $user && $context[self::CONTEXT_ACTOR_ID] = $user->id;
         }
+
+        if ($sessionId = self::getRequestSessionId($request)) {
+            $context[self::CONTEXT_SESSION_ID] = $sessionId;
+        }
     }
 
     public function publishEvent(EventInterface $event, string $exchange = 'events')
@@ -237,6 +242,10 @@ class MqClient
             if (!isset($context[self::CONTEXT_ACTOR_ID]) && $accessChecker) {
                 $user = $accessChecker->validUser($request);
                 $user && $event->addContext(self::CONTEXT_ACTOR_ID, $user->id);
+            }
+
+            if ($sessionId = self::getRequestSessionId($request)) {
+                $event->addContext(self::CONTEXT_REQUEST_ID, $sessionId);
             }
         }
 
@@ -264,5 +273,22 @@ class MqClient
             'payload'    => $event->getPayload(),
             'context'    => $event->getContext(),
         ]);
+    }
+
+    private static function getRequestSessionId(Request $request):?string
+    {
+        if ('POST' === $request->getMethod() && ('/consume' === substr($request->getRequestUri(), 0, 8))) {
+            $msgContext = $request->get('context');
+            if (empty($msgContext)) {
+                return null;
+            }
+
+            $msgContext = is_scalar($msgContext) ? json_decode($msgContext) : json_decode(json_encode($msgContext, JSON_FORCE_OBJECT));
+            if (isset($msgContext->{self::CONTEXT_SESSION_ID})) {
+                return $msgContext->{self::CONTEXT_SESSION_ID};
+            }
+        }
+
+        return null;
     }
 }
