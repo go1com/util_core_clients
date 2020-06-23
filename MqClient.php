@@ -16,6 +16,7 @@ use PhpAmqpLib\Wire\AMQPTable;
 use Pimple\Container;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use function class_exists;
@@ -223,8 +224,10 @@ class MqClient
             $user && $context[self::CONTEXT_ACTOR_ID] = $user->id;
         }
 
-        if ($sessionId = self::getRequestSessionId($request)) {
-            $context[self::CONTEXT_SESSION_ID] = $sessionId;
+        if (!isset($context[self::CONTEXT_SESSION_ID])) {
+            if ($sessionId = self::getRequestSessionId($request)) {
+                $context[self::CONTEXT_SESSION_ID] = $sessionId;
+            }
         }
     }
 
@@ -244,8 +247,10 @@ class MqClient
                 $user && $event->addContext(self::CONTEXT_ACTOR_ID, $user->id);
             }
 
-            if ($sessionId = self::getRequestSessionId($request)) {
-                $event->addContext(self::CONTEXT_REQUEST_ID, $sessionId);
+            if (!isset($context[self::CONTEXT_SESSION_ID])) {
+                if ($sessionId = self::getRequestSessionId($request)) {
+                    $event->addContext(self::CONTEXT_SESSION_ID, $sessionId);
+                }
             }
         }
 
@@ -275,20 +280,18 @@ class MqClient
         ]);
     }
 
-    private static function getRequestSessionId(Request $request):?string
+    private static function getRequestSessionId(Request $request): ?string
     {
         if ('POST' === $request->getMethod() && ('/consume' === substr($request->getRequestUri(), 0, 8))) {
             $msgContext = $request->get('context');
-            if (empty($msgContext)) {
-                return null;
-            }
-
-            $msgContext = is_scalar($msgContext) ? json_decode($msgContext) : json_decode(json_encode($msgContext, JSON_FORCE_OBJECT));
-            if (isset($msgContext->{self::CONTEXT_SESSION_ID})) {
-                return $msgContext->{self::CONTEXT_SESSION_ID};
+            if (!empty($msgContext)) {
+                $msgContext = is_scalar($msgContext) ? json_decode($msgContext) : json_decode(json_encode($msgContext, JSON_FORCE_OBJECT));
+                if (isset($msgContext->{self::CONTEXT_SESSION_ID})) {
+                    return $msgContext->{self::CONTEXT_SESSION_ID};
+                }
             }
         }
 
-        return null;
+        return Uuid::uuid4()->toString();
     }
 }
