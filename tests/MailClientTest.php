@@ -83,4 +83,20 @@ class MailClientTest extends TestCase
         $this->assertEquals('test subject', $payload->subject);
         $this->assertEquals('test body', $payload->body);
     }
+
+    public function testSendWithCategories()
+    {
+        $mail = $this->getMailClient();
+        $mail->withQueueExchange('events');
+        $mail->send('', 'user@qa.com', '', '', '<strong>body</strong>',[], [], [], [], [], [], [], ['dogs', 'animals', 'pets', 'mammals']);
+
+        /** @var AMQPMessage $msg */
+        $msg = $this->log[0][0];
+        $payload = json_decode($msg->getBody());
+
+        $this->assertEquals('events', $this->log[0][1], 'exchange');
+        $this->assertEquals('do.mail.send', $this->log[0][2], 'simple routing key');
+        $this->assertEquals('user@qa.com', $payload->recipient);
+        $this->assertEquals(['dogs', 'animals', 'pets', 'mammals'], $payload->categories);
+    }
 }

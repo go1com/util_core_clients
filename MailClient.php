@@ -58,9 +58,10 @@ class MailClient
         $cc = [],
         $bcc = [],
         array $queueContext = [],
-        array $queueOptions = [])
-    {
-        $this->send(null, $recipient, $template->getSubject(), $template->getBody(), $template->getHtml(), $context, $options, $attachments, $cc, $bcc, $queueContext, $queueOptions);
+        array $queueOptions = [],
+        array $categories = []
+    ) {
+        $this->send(null, $recipient, $template->getSubject(), $template->getBody(), $template->getHtml(), $context, $options, $attachments, $cc, $bcc, $queueContext, $queueOptions, $categories);
     }
 
     /**
@@ -78,7 +79,8 @@ class MailClient
         $cc = [],
         $bcc = [],
         array $queueContext = [],
-        array $queueOptions = []
+        array $queueOptions = [],
+        array $categories = []
     ) {
         $data = array_filter(['cc' => $cc, 'bcc' => $bcc]);
 
@@ -98,6 +100,7 @@ class MailClient
             'context'     => $context,
             'attachments' => $attachments, # array of ['name' => STRING, 'url' => STRING]
             'options'     => $options,
+            'categories'  => $categories,
         ];
         $data['custom_smtp'] = $this->customSmtp;
 
