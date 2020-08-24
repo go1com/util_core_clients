@@ -2,6 +2,7 @@
 
 namespace go1\clients;
 
+use go1\core\util\client\UserDomainHelper;
 use go1\util\queue\Queue;
 use go1\util\user\UserHelper;
 use GuzzleHttp\Client;
@@ -12,15 +13,17 @@ class UserClient
 {
     use BearerClientTrait;
 
-    private $client;
-    private $userUrl;
-    private $mqClient;
+    private Client           $client;
+    private string           $userUrl;
+    private MqClient         $mqClient;
+    private UserDomainHelper $helper;
 
-    public function __construct(Client $client, string $userUrl, MqClient $mqClient)
+    public function __construct(Client $client, string $userUrl, MqClient $mqClient, UserDomainHelper $userDomainHelper)
     {
         $this->client = $client;
         $this->userUrl = rtrim($userUrl, '/');
         $this->mqClient = $mqClient;
+        $this->helper = $userDomainHelper;
     }
 
     public function userUrl(): string
@@ -31,6 +34,11 @@ class UserClient
     public function client(): Client
     {
         return $this->client;
+    }
+    
+    public function helper()
+    {
+        return $this->helper;
     }
 
     public function unblockEmail($mail)
@@ -77,20 +85,20 @@ class UserClient
 
     public function register($accountsName, $portalName, $mail, $pass, $first, $last, $data = null, $jwtExpire = '+ 1 month', array $options = [])
     {
-        return $this->client->post("$this->userUrl/account" , $options + [
-            'http_errors' => false,
-            'headers'     => ['JWT-Expire-Time' => $jwtExpire],
-            'json'        => array_filter([
-                'instance'   => $accountsName,
-                'portal'     => $portalName,
-                'email'      => $mail,
-                'password'   => $pass ?: Uuid::uuid4()->toString(),
-                'random'     => !$pass,
-                'first_name' => $first,
-                'last_name'  => $last,
-                'data'       => $data,
-            ]),
-        ]);
+        return $this->client->post("$this->userUrl/account", $options + [
+                'http_errors' => false,
+                'headers'     => ['JWT-Expire-Time' => $jwtExpire],
+                'json'        => array_filter([
+                    'instance'   => $accountsName,
+                    'portal'     => $portalName,
+                    'email'      => $mail,
+                    'password'   => $pass ?: Uuid::uuid4()->toString(),
+                    'random'     => !$pass,
+                    'first_name' => $first,
+                    'last_name'  => $last,
+                    'data'       => $data,
+                ]),
+            ]);
     }
 
     /**
@@ -116,7 +124,7 @@ class UserClient
             }
 
             $offset += $limit;
-        } while($all && count($users) === $limit);
+        } while ($all && count($users) === $limit);
     }
 
     public function findAdministrators($portalName, $all = false, $limit = 10, $offset = 0, array $options = [])

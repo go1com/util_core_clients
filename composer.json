@@ -1,29 +1,33 @@
 {
-  "name":              "go1/util_core_clients",
-  "license":           "proprietary",
-  "prefer-stable":     true,
-  "minimum-stability": "stable",
-  "autoload":          {
-    "psr-4": {
-      "go1\\clients\\": "./"
-    }
-  },
-  "require":           {
-    "php":                     "^7.4",
-    "guzzlehttp/guzzle":       "^6.2.0",
-    "doctrine/cache":          "^v1.6.0",
-    "ramsey/uuid":             "^3.4",
-    "go1/util_core":           "dev-master",
-    "php-amqplib/php-amqplib": "^2.6",
-    "symfony/property-access": "^4.0 | ^3.4"
-  },
-  "require-dev":       {
-    "go1/util_publishing_event": "dev-master"
-  },
-  "suggest":           {
-    "go1/util_publishing_event": "Enable experiment on better event publishing. Branch: dev-master"
-  },
-  "scripts":           {
-    "lint": "php-cs-fixer fix --using-cache=no --rules='{\"braces\": {\"allow_single_line_closure\": true}}' ."
-  }
+    "name":              "go1/util_core_clients",
+    "license":           "proprietary",
+    "prefer-stable":     true,
+    "minimum-stability": "stable",
+    "autoload":          {
+        "psr-4": {
+            "go1\\clients\\": "./"
+        }
+    },
+    "require":           {
+        "php":                     "^7.4",
+        "guzzlehttp/guzzle":       "^6.2.0",
+        "doctrine/cache":          "^v1.6.0",
+        "ramsey/uuid":             "^3.4",
+        "go1/util_core":           "dev-master",
+        "go1.core/util":           "dev-master",
+        "php-amqplib/php-amqplib": "^2.6",
+        "symfony/property-access": "^4.0 | ^3.4"
+    },
+    "require-dev":       {
+        "go1/util_publishing_event": "dev-master"
+    },
+    "suggest":           {
+        "go1/util_publishing_event": "Enable experiment on better event publishing. Branch: dev-master"
+    },
+    "scripts":           {
+        "lint": "php-cs-fixer fix --using-cache=no --rules='{\"braces\": {\"allow_single_line_closure\": true}}' ."
+    },
+    "repositories":      [
+        { "type": "vcs", "url": "git@code.go1.com.au:mirror/go1-core/util.git" }
+    ]
 }
