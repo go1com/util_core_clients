@@ -35,7 +35,7 @@ class UserClient
     {
         return $this->client;
     }
-    
+
     public function helper()
     {
         return $this->helper;

@@ -4,6 +4,7 @@ namespace go1\clients\tests;
 
 use Doctrine\Common\Cache\ArrayCache;
 use go1\clients\UtilCoreClientServiceProvider;
+use go1\core\util\client\UserDomainHelper;
 use go1\util\Service;
 use go1\util\tests\UtilCoreTestCase;
 use GuzzleHttp\Client;
@@ -18,10 +19,7 @@ class UtilCoreClientsTestCase extends UtilCoreTestCase
             throw new RuntimeException('Please call ::setUp() before using this.');
         }
 
-        $container['client'] = function (Container $c) {
-            return new Client();
-        };
-
+        $container['client'] = fn(Container $c) => new Client();
         $container['cache'] = new ArrayCache;
         $container->register(new UtilCoreClientServiceProvider, [
             'queueOptions' => [
@@ -40,5 +38,14 @@ class UtilCoreClientsTestCase extends UtilCoreTestCase
         $container->extend('go1.client.mq', function () {
             return $this->queue;
         });
+
+        $container['go1.client.user-domain-helper'] = function () {
+            $helper = $this
+                ->getMockBuilder(UserDomainHelper::class)
+                ->disableOriginalConstructor()
+                ->getMock();
+
+            return $helper;
+        };
     }
 }

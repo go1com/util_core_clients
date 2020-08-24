@@ -1,4 +1,5 @@
 <?php
+
 namespace go1\clients;
 
 use go1\util\user\UserHelper;
@@ -7,19 +8,18 @@ use GuzzleHttp\RequestOptions;
 
 trait BearerClientTrait
 {
-    /**
-     * @var Client
-     */
-    private $client;
+    /** @var Client */
+    private Client $client;
 
-    public function withBearerToken(string $token) : self
+    public function withBearerToken(string $token): self
     {
         $retval = clone $this;
         $retval->setBearerToken($token);
+
         return $retval;
     }
 
-    public function withRootJwt() : self
+    public function withRootJwt(): self
     {
         return $this->withBearerToken(UserHelper::ROOT_JWT);
     }
@@ -30,7 +30,7 @@ trait BearerClientTrait
         $this->client->__construct(array_merge_recursive(
             $this->client->getConfig(),
             [
-                RequestOptions::HEADERS => ['Authorization' => 'Bearer '.$token]
+                RequestOptions::HEADERS => ['Authorization' => 'Bearer ' . $token],
             ]
         ));
     }

@@ -4,6 +4,7 @@ namespace go1\clients\tests;
 
 use go1\clients\MqClient;
 use go1\clients\UserClient;
+use go1\core\util\client\UserDomainHelper;
 use go1\util\queue\Queue;
 use go1\util\user\UserHelper;
 use GuzzleHttp\Client;
@@ -86,18 +87,18 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
     private function fakeUserClient()
     {
         $userClient = $this->getMockBuilder(UserClient::class)
-                           ->setMethods(['uuid2jwt'])
-                           ->disableOriginalConstructor()
-                           ->getMock();
+            ->setMethods(['uuid2jwt'])
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $userClient->expects($this->any())
-                   ->method('uuid2jwt')
-                   ->willReturnCallback(function ($client, $userUrl, $uuid, $portalName) use ($userClient) {
-                       $uuid2jwt = new \ReflectionMethod(UserClient::class, 'uuid2jwt');
-                       $rs = $uuid2jwt->invokeArgs($userClient, [$client, $userUrl, $uuid, $portalName]);
+            ->method('uuid2jwt')
+            ->willReturnCallback(function ($client, $userUrl, $uuid, $portalName) use ($userClient) {
+                $uuid2jwt = new \ReflectionMethod(UserClient::class, 'uuid2jwt');
+                $rs = $uuid2jwt->invokeArgs($userClient, [$client, $userUrl, $uuid, $portalName]);
 
-                       return $rs;
-                   });
+                return $rs;
+            });
 
         return $userClient;
     }
@@ -105,28 +106,28 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
     private function fakeClient(string &$urlResult, string $portalName = null, \stdClass $payload, int $id)
     {
         $client = $this->getMockBuilder(Client::class)
-                       ->setMethods(['get'])
-                       ->disableOriginalConstructor()
-                       ->getMock();
+            ->setMethods(['get'])
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $client->expects($this->any())
-               ->method('get')
-               ->willReturnCallback(function ($url, $options) use (&$urlResult, $portalName, $payload, $id) {
-                   if (-1 < strpos($url, 'account/masquerade')) {
-                       return new Response(200, ['Content-Type' => 'application/json'], json_encode(UserHelper::load($this->go1, $id)));
-                   }
-                   $urlResult = $url;
-                   if (!is_null($portalName)) {
-                       foreach ($payload->accounts as $account) {
-                           if ($portalName == $account->instance) {
-                               $payload->accounts = [$account];
-                               break;
-                           }
-                       }
-                   }
+            ->method('get')
+            ->willReturnCallback(function ($url, $options) use (&$urlResult, $portalName, $payload, $id) {
+                if (-1 < strpos($url, 'account/masquerade')) {
+                    return new Response(200, ['Content-Type' => 'application/json'], json_encode(UserHelper::load($this->go1, $id)));
+                }
+                $urlResult = $url;
+                if (!is_null($portalName)) {
+                    foreach ($payload->accounts as $account) {
+                        if ($portalName == $account->instance) {
+                            $payload->accounts = [$account];
+                            break;
+                        }
+                    }
+                }
 
-                   return new Response(200, ['Content-Type' => 'application/json'], json_encode(['jwt' => UserHelper::encode($payload)]));
-               });
+                return new Response(200, ['Content-Type' => 'application/json'], json_encode(['jwt' => UserHelper::encode($payload)]));
+            });
 
         return $client;
     }
@@ -134,13 +135,15 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
     /** @dataProvider dataGetJwt */
     public function testUuid2jwt(string $apiUrl, int $profileId, string $uuid, string $portalName = null)
     {
+        $c = $this->getContainer(true);
         $clientMock = $this->prophesize(Client::class);
-        $mqClientMock = $this->prophesize(MqClient::class);
+        $queue = $this->prophesize(MqClient::class);
 
         $testSubject = new UserClient(
             $clientMock->reveal(),
             $apiUrl,
-            $mqClientMock->reveal()
+            $queue->reveal(),
+            $c['go1.client.user-domain-helper']
         );
 
         $response = new Response(200, [], json_encode(['jwt' => 'a jwt']));
@@ -256,20 +259,21 @@ class UserCoreClientsTest extends UtilCoreClientsTestCase
         $testSubject = new UserClient(
             $clientMock->reveal(),
             'http://example.com',
-            $mqClientMock->reveal()
+            $mqClientMock->reveal(),
+            $this
+                ->getMockBuilder(UserDomainHelper::class)
+                ->disableOriginalConstructor()
+                ->getMock()
         );
 
-        $options = [
-            RequestOptions::VERIFY => true,
-        ];
-
-        $response = new Response(200, [], json_encode([1,2]));
-        $clientMock->get(
-            'http://example.com/account/find/foo.mygo1.com/administrator,student?limit=30&offset=2',
-            $options
-        )->shouldBeCalled()
+        $options = [RequestOptions::VERIFY => true];
+        $response = new Response(200, [], json_encode([1, 2]));
+        $clientMock
+            ->get(
+                'http://example.com/account/find/foo.mygo1.com/administrator,student?limit=30&offset=2',
+                $options
+            )->shouldBeCalled()
             ->willReturn($response);
-
 
         $result = $testSubject->findUsers('foo.mygo1.com', ['administrator', 'student'], true, 30, 2, $options);
         $this->assertIsIterable($result);

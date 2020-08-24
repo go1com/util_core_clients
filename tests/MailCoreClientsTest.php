@@ -12,13 +12,10 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
 {
     use PortalMockTrait;
 
-    /**
-     * @runInSeparateProcess
-     */
     public function testSmtpPortal()
     {
         /** @var MailClient $client */
-        $container = $this->getContainer();
+        $container = $this->getContainer(true);
         $client = $container['go1.client.mail'];
         $portalId = $this->createPortal($this->go1, [
             'title' => $portalName = 'foo.bar',
@@ -45,26 +42,24 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
                 'attachments'   => [],
                 'options'       => [],
                 'custom_smtp'   => true,
+                'categories'    => [],
             ],
             $this->queueMessages[Queue::DO_MAIL_SEND][0]
         );
     }
 
-    /**
-     * @runInSeparateProcess
-     */
     public function testSendInMailBulk()
     {
         /** @var MailClient $client */
-        $container = $this->getContainer();
+        $container = $this->getContainer(true);
         $client = $container['go1.client.mail'];
         $portalId = $this->createPortal($this->go1, ['title' => $portalName = 'foo.bar']);
-
         $queueOptions = ['custom' => Queue::DO_MAIL_BULK_SEND];
 
         $client
             ->instance($this->go1, $portalName)
             ->post('foo@bar.com', new MailTemplate('id', 'subject', 'body', 'html'), [], [], [], [], [], [], $queueOptions);
+
         $this->assertArrayHasKey(Queue::DO_MAIL_BULK_SEND, $this->queueMessages);
         $this->assertCount(1, $this->queueMessages[Queue::DO_MAIL_BULK_SEND]);
         $this->assertEquals(
@@ -79,18 +74,16 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
                 'attachments'   => [],
                 'options'       => [],
                 'custom_smtp'   => false,
+                'categories'    => [],
             ],
             $this->queueMessages[Queue::DO_MAIL_BULK_SEND][0]
         );
     }
 
-    /**
-     * @runInSeparateProcess
-     */
     public function testNoSmtpPortal()
     {
         /** @var MailClient $client */
-        $container = $this->getContainer();
+        $container = $this->getContainer(true);
         $client = $container['go1.client.mail'];
         $portalId = $this->createPortal($this->go1, ['title' => $portalName = 'foo.bar']);
 
@@ -112,18 +105,16 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
                 'attachments'   => [],
                 'options'       => [],
                 'custom_smtp'   => false,
+                'categories'    => [],
             ],
             $this->queueMessages[Queue::DO_MAIL_SEND][0]
         );
     }
 
-    /**
-     * @runInSeparateProcess
-     */
     public function testNoPortal()
     {
         /** @var MailClient $client */
-        $container = $this->getContainer();
+        $container = $this->getContainer(true);
         $client = $container['go1.client.mail'];
         $client->post('foo@bar.com', new MailTemplate('id', 'subject', 'body', 'html'));
 
@@ -139,6 +130,7 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
                 'attachments' => [],
                 'options'     => [],
                 'custom_smtp' => false,
+                'categories'  => [],
             ],
             $this->queueMessages[Queue::DO_MAIL_SEND][0]
         );
