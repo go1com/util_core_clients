@@ -15,7 +15,7 @@ class MailClient
     private $portalName;
     private $portalId;
     private $queueExchange = '';
-    private $customSmtp = false;
+    private $customSmtp    = false;
 
     public function __construct(MqClient $queue)
     {
@@ -45,7 +45,8 @@ class MailClient
         return $this;
     }
 
-    public function withQueueExchange(string $exchange) {
+    public function withQueueExchange(string $exchange)
+    {
         $this->queueExchange = $exchange;
     }
 
@@ -103,8 +104,8 @@ class MailClient
             'categories'  => $categories,
         ];
         $data['custom_smtp'] = $this->customSmtp;
-
         $routingKey = isset($queueOptions['custom']) ? $queueOptions['custom'] : Queue::DO_MAIL_SEND;
+
         $this->queue->publish($data, $routingKey, $queueContext);
     }
 
