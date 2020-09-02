@@ -36,6 +36,7 @@ class MqClient
     private        $container;
     private        $request;
     private        $propertyAccessor;
+    private int    $defaultPriority;
     private string $batchExchange;
 
     const CONTEXT_ACTOR_ID    = 'actor_id';
@@ -61,7 +62,8 @@ class MqClient
         LoggerInterface $logger = null,
         AccessChecker $accessChecker = null,
         Container $container = null,
-        Request $request = null
+        Request $request = null,
+        int $defaultPriority = null
     )
     {
         $this->host = $host;
@@ -72,6 +74,7 @@ class MqClient
         $this->accessChecker = $accessChecker;
         $this->container = $container;
         $this->request = $request;
+        $this->defaultPriority = $defaultPriority;
         $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
     }
 
@@ -97,7 +100,7 @@ class MqClient
         $this->channel()->close();
     }
 
-    public function batchAdd($body, string $routingKey, array $context = [], int $priority = self::PRIORITY_NORMAL)
+    public function batchAdd($body, string $routingKey, array $context = [], int $priority = null)
     {
         $this->queue($body, $routingKey, $context, 'events', true, $priority);
     }
@@ -111,7 +114,7 @@ class MqClient
         }
     }
 
-    public function publish($body, string $routingKey, array $context = [], int $priority = self::PRIORITY_NORMAL)
+    public function publish($body, string $routingKey, array $context = [], int $priority = null)
     {
         $this->queue($body, $routingKey, $context, 'events', false, $priority);
     }
@@ -133,7 +136,7 @@ class MqClient
         array $context = [],
         $exchange = '',
         bool $batch = false,
-        int $priority = self::PRIORITY_NORMAL
+        int $priority = null
     ) {
         $body = is_scalar($body) ? json_decode($body) : $body;
         $this->processMessage($body, $routingKey);
@@ -164,7 +167,7 @@ class MqClient
         string $body,
         array $headers,
         bool $batch = false,
-        int $priority = self::PRIORITY_NORMAL
+        int $priority = null
     ) {
         // add root span ID.
         if (class_exists(Configuration::class)) {
@@ -180,7 +183,7 @@ class MqClient
         $msg = new AMQPMessage($body, array_filter([
             'content_type'        => 'application/json',
             'application_headers' => new AMQPTable($headers),
-            'priority'            => $priority
+            'priority'            => $priority || $this->defaultPriority
         ]));
 
         $batch
