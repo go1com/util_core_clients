@@ -324,4 +324,169 @@ class MqCoreClientsTest extends UtilCoreClientsTestCase
         $client->batchAdd('{"foo":"bar"}', 'qa-routingKey', []);
         $client->batchDone();
     }
+
+    public function testPriority()
+    {
+        # Can customize priority on batch publishing
+        {
+            $container = new Container(['accounts_name' => 'accounts.test']);
+            $container
+                ->register(new UtilCoreServiceProvider)
+                ->register(new UtilCoreClientServiceProvider, ['queueOptions' => Service::queueOptions()])
+                ->extend('go1.client.mq', function (MqClient $queue) {
+                    $ch = $this
+                        ->getMockBuilder(AMQPChannel::class)
+                        ->disableOriginalConstructor()
+                        ->setMethods(['basic_publish', 'batch_basic_publish'])
+                        ->getMock();
+
+                    $ch
+                        ->expects($this->any())
+                        ->method('batch_basic_publish')
+                        ->willReturnCallback(function (AMQPMessage $msg, string $exchange, string $routingKey) {
+                            $properties = $msg->get_properties();
+
+                            $this->assertEquals('{"foo":"bar"}', $msg->getBody());
+                            $this->assertEquals('events', $exchange);
+                            $this->assertEquals('qa-routingKey', $routingKey);
+                            $this->assertEquals(20, $properties['priority']);
+
+                        });
+
+                    $rQueue = new ReflectionObject($queue);
+                    $rChannels = $rQueue->getProperty('channels');
+                    $rChannels->setAccessible(true);
+                    $chs['events']['topic'] = $ch;
+                    $rChannels->setValue($queue, $chs);
+
+                    return $queue;
+                });
+
+            /** @var MqClient $client */
+            $client = $container['go1.client.mq'];
+            $client->batchAdd('{"foo":"bar"}', 'qa-routingKey', [], 20);
+            $client->batchDone();
+        }
+
+        # Default priority on batch publishing
+        {
+            $container = new Container(['accounts_name' => 'accounts.test']);
+            $container
+                ->register(new UtilCoreServiceProvider)
+                ->register(new UtilCoreClientServiceProvider, ['queueOptions' => Service::queueOptions()])
+                ->extend('go1.client.mq', function (MqClient $queue) {
+                    $ch = $this
+                        ->getMockBuilder(AMQPChannel::class)
+                        ->disableOriginalConstructor()
+                        ->setMethods(['basic_publish', 'batch_basic_publish'])
+                        ->getMock();
+
+                    $ch
+                        ->expects($this->any())
+                        ->method('batch_basic_publish')
+                        ->willReturnCallback(function (AMQPMessage $msg, string $exchange, string $routingKey) {
+                            $properties = $msg->get_properties();
+
+                            $this->assertEquals('{"foo":"bar"}', $msg->getBody());
+                            $this->assertEquals('events', $exchange);
+                            $this->assertEquals('qa-routingKey', $routingKey);
+                            $this->assertEquals(10, $properties['priority']);
+
+                        });
+
+                    $rQueue = new ReflectionObject($queue);
+                    $rChannels = $rQueue->getProperty('channels');
+                    $rChannels->setAccessible(true);
+                    $chs['events']['topic'] = $ch;
+                    $rChannels->setValue($queue, $chs);
+
+                    return $queue;
+                });
+
+            /** @var MqClient $client */
+            $client = $container['go1.client.mq'];
+            $client->batchAdd('{"foo":"bar"}', 'qa-routingKey', []);
+            $client->batchDone();
+        }
+
+        # Can customize priority on publishing
+        {
+            $container = new Container(['accounts_name' => 'accounts.test']);
+            $container
+                ->register(new UtilCoreServiceProvider)
+                ->register(new UtilCoreClientServiceProvider, ['queueOptions' => Service::queueOptions()])
+                ->extend('go1.client.mq', function (MqClient $queue) {
+                    $ch = $this
+                        ->getMockBuilder(AMQPChannel::class)
+                        ->disableOriginalConstructor()
+                        ->setMethods(['basic_publish'])
+                        ->getMock();
+
+                    $ch
+                        ->expects($this->any())
+                        ->method('basic_publish')
+                        ->willReturnCallback(function (AMQPMessage $msg, string $exchange, string $routingKey) {
+                            $properties = $msg->get_properties();
+
+                            $this->assertEquals('{"foo":"bar"}', $msg->getBody());
+                            $this->assertEquals('events', $exchange);
+                            $this->assertEquals('qa-routingKey', $routingKey);
+                            $this->assertEquals(20, $properties['priority']);
+
+                        });
+
+                    $rQueue = new ReflectionObject($queue);
+                    $rChannels = $rQueue->getProperty('channels');
+                    $rChannels->setAccessible(true);
+                    $chs['events']['topic'] = $ch;
+                    $rChannels->setValue($queue, $chs);
+
+                    return $queue;
+                });
+
+            /** @var MqClient $client */
+            $client = $container['go1.client.mq'];
+            $client->publish('{"foo":"bar"}', 'qa-routingKey', [], 20);
+        }
+
+        # Default priority on batch publishing
+        {
+            $container = new Container(['accounts_name' => 'accounts.test']);
+            $container
+                ->register(new UtilCoreServiceProvider)
+                ->register(new UtilCoreClientServiceProvider, ['queueOptions' => Service::queueOptions()])
+                ->extend('go1.client.mq', function (MqClient $queue) {
+                    $ch = $this
+                        ->getMockBuilder(AMQPChannel::class)
+                        ->disableOriginalConstructor()
+                        ->setMethods(['basic_publish'])
+                        ->getMock();
+
+                    $ch
+                        ->expects($this->any())
+                        ->method('basic_publish')
+                        ->willReturnCallback(function (AMQPMessage $msg, string $exchange, string $routingKey) {
+                            $properties = $msg->get_properties();
+
+                            $this->assertEquals('{"foo":"bar"}', $msg->getBody());
+                            $this->assertEquals('events', $exchange);
+                            $this->assertEquals('qa-routingKey', $routingKey);
+                            $this->assertEquals(10, $properties['priority']);
+
+                        });
+
+                    $rQueue = new ReflectionObject($queue);
+                    $rChannels = $rQueue->getProperty('channels');
+                    $rChannels->setAccessible(true);
+                    $chs['events']['topic'] = $ch;
+                    $rChannels->setValue($queue, $chs);
+
+                    return $queue;
+                });
+
+            /** @var MqClient $client */
+            $client = $container['go1.client.mq'];
+            $client->publish('{"foo":"bar"}', 'qa-routingKey', []);
+        }
+    }
 }

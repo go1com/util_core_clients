@@ -93,9 +93,9 @@ class MqClient
         $this->channel()->close();
     }
 
-    public function batchAdd($body, string $routingKey, array $context = [])
+    public function batchAdd($body, string $routingKey, array $context = [], int $priority = 10)
     {
-        $this->queue($body, $routingKey, $context, 'events', true);
+        $this->queue($body, $routingKey, $context, 'events', true, $priority);
     }
 
     public function batchDone()
@@ -107,9 +107,9 @@ class MqClient
         }
     }
 
-    public function publish($body, string $routingKey, array $context = [])
+    public function publish($body, string $routingKey, array $context = [], int $priority = 10)
     {
-        $this->queue($body, $routingKey, $context, 'events');
+        $this->queue($body, $routingKey, $context, 'events', $priority);
     }
 
     private function currentRequest()
@@ -123,8 +123,14 @@ class MqClient
             : null;
     }
 
-    public function queue($body, string $routingKey, array $context = [], $exchange = '', bool $batch = false)
-    {
+    public function queue(
+        $body,
+        string $routingKey,
+        array $context = [],
+        $exchange = '',
+        bool $batch = false,
+        int $priority = 10
+    ) {
         $body = is_scalar($body) ? json_decode($body) : $body;
         $this->processMessage($body, $routingKey);
 
@@ -144,12 +150,18 @@ class MqClient
         }
 
         $body = $body = is_scalar($body) ? $body : json_encode($body);
-        $this->doQueue($exchange, $routingKey, $body, $context, $batch);
+        $this->doQueue($exchange, $routingKey, $body, $context, $batch, $priority);
         $this->logger->debug($body, ['exchange' => $exchange, 'routingKey' => $routingKey, 'context' => $context]);
     }
 
-    protected function doQueue(string $exchange, string $routingKey, string $body, array $headers, bool $batch = false)
-    {
+    protected function doQueue(
+        string $exchange,
+        string $routingKey,
+        string $body,
+        array $headers,
+        bool $batch = false,
+        int $priority = 10
+    ) {
         // add root span ID.
         if (class_exists(Configuration::class)) {
             if (Configuration::get()->isDistributedTracingEnabled()) {
@@ -160,8 +172,12 @@ class MqClient
                 }
             }
         }
-        
-        $msg = new AMQPMessage($body, ['content_type' => 'application/json', 'application_headers' => new AMQPTable($headers)]);
+
+        $msg = new AMQPMessage($body, array_filter([
+            'content_type'        => 'application/json',
+            'application_headers' => new AMQPTable($headers),
+            'priority'            => $priority
+        ]));
 
         $batch
             ? $this->channel()->batch_basic_publish($msg, $exchange, $routingKey)
