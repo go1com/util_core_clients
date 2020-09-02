@@ -68,8 +68,9 @@ class UtilCoreClientServiceProvider implements ServiceProviderInterface
             $o = $c['queueOptions'];
 
             $currentRequest = $c->offsetExists('request_stack') ? $c['request_stack']->getCurrentRequest() : null;
+            $defaultPriority = $o['defaultPriority'] ?? MqClient::PRIORITY_NORMAL;
 
-            return new MqClient($o['host'], $o['port'], $o['user'], $o['pass'], $logger, $c['access_checker'], $c, $currentRequest);
+            return new MqClient($o['host'], $o['port'], $o['user'], $o['pass'], $logger, $c['access_checker'], $c, $currentRequest, $defaultPriority);
         };
     }
 }
