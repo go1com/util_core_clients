@@ -349,7 +349,7 @@ class MqCoreClientsTest extends UtilCoreClientsTestCase
                             $this->assertEquals('{"foo":"bar"}', $msg->getBody());
                             $this->assertEquals('events', $exchange);
                             $this->assertEquals('qa-routingKey', $routingKey);
-                            $this->assertEquals(20, $properties['priority']);
+                            $this->assertEquals(MqClient::PRIORITY_HIGH, $properties['priority']);
 
                         });
 
@@ -364,7 +364,7 @@ class MqCoreClientsTest extends UtilCoreClientsTestCase
 
             /** @var MqClient $client */
             $client = $container['go1.client.mq'];
-            $client->batchAdd('{"foo":"bar"}', 'qa-routingKey', [], 20);
+            $client->batchAdd('{"foo":"bar"}', 'qa-routingKey', [], MqClient::PRIORITY_HIGH);
             $client->batchDone();
         }
 
@@ -390,7 +390,7 @@ class MqCoreClientsTest extends UtilCoreClientsTestCase
                             $this->assertEquals('{"foo":"bar"}', $msg->getBody());
                             $this->assertEquals('events', $exchange);
                             $this->assertEquals('qa-routingKey', $routingKey);
-                            $this->assertEquals(10, $properties['priority']);
+                            $this->assertEquals(MqClient::PRIORITY_NORMAL, $properties['priority']);
 
                         });
 
@@ -431,7 +431,7 @@ class MqCoreClientsTest extends UtilCoreClientsTestCase
                             $this->assertEquals('{"foo":"bar"}', $msg->getBody());
                             $this->assertEquals('events', $exchange);
                             $this->assertEquals('qa-routingKey', $routingKey);
-                            $this->assertEquals(20, $properties['priority']);
+                            $this->assertEquals(MqClient::PRIORITY_HIGH, $properties['priority']);
 
                         });
 
@@ -446,7 +446,7 @@ class MqCoreClientsTest extends UtilCoreClientsTestCase
 
             /** @var MqClient $client */
             $client = $container['go1.client.mq'];
-            $client->publish('{"foo":"bar"}', 'qa-routingKey', [], 20);
+            $client->publish('{"foo":"bar"}', 'qa-routingKey', [], MqClient::PRIORITY_HIGH);
         }
 
         # Default priority on batch publishing
@@ -471,7 +471,7 @@ class MqCoreClientsTest extends UtilCoreClientsTestCase
                             $this->assertEquals('{"foo":"bar"}', $msg->getBody());
                             $this->assertEquals('events', $exchange);
                             $this->assertEquals('qa-routingKey', $routingKey);
-                            $this->assertEquals(10, $properties['priority']);
+                            $this->assertEquals(MqClient::PRIORITY_NORMAL, $properties['priority']);
 
                         });
 

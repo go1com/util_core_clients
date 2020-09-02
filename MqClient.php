@@ -52,6 +52,10 @@ class MqClient
     const CONTEXT_ENTITY_TYPE = 'entity-type';
     const CONTEXT_PORTAL_NAME = 'portal-name';
 
+    const PRIORITY_LOW    = 1;
+    const PRIORITY_NORMAL = 10;
+    const PRIORITY_HIGH   = 20;
+
     public function __construct(
         $host, $port, $user, $pass,
         LoggerInterface $logger = null,
@@ -93,7 +97,7 @@ class MqClient
         $this->channel()->close();
     }
 
-    public function batchAdd($body, string $routingKey, array $context = [], int $priority = 10)
+    public function batchAdd($body, string $routingKey, array $context = [], int $priority = self::PRIORITY_NORMAL)
     {
         $this->queue($body, $routingKey, $context, 'events', true, $priority);
     }
@@ -107,9 +111,9 @@ class MqClient
         }
     }
 
-    public function publish($body, string $routingKey, array $context = [], int $priority = 10)
+    public function publish($body, string $routingKey, array $context = [], int $priority = self::PRIORITY_NORMAL)
     {
-        $this->queue($body, $routingKey, $context, 'events', $priority);
+        $this->queue($body, $routingKey, $context, 'events', false, $priority);
     }
 
     private function currentRequest()
@@ -129,7 +133,7 @@ class MqClient
         array $context = [],
         $exchange = '',
         bool $batch = false,
-        int $priority = 10
+        int $priority = self::PRIORITY_NORMAL
     ) {
         $body = is_scalar($body) ? json_decode($body) : $body;
         $this->processMessage($body, $routingKey);
@@ -160,7 +164,7 @@ class MqClient
         string $body,
         array $headers,
         bool $batch = false,
-        int $priority = 10
+        int $priority = self::PRIORITY_NORMAL
     ) {
         // add root span ID.
         if (class_exists(Configuration::class)) {
