@@ -63,7 +63,7 @@ class MqClient
         AccessChecker $accessChecker = null,
         Container $container = null,
         Request $request = null,
-        int $defaultPriority = null
+        int $defaultPriority = MqClient::PRIORITY_NORMAL
     )
     {
         $this->host = $host;

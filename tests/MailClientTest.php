@@ -8,6 +8,7 @@ use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
+use ReflectionClass;
 use function func_get_args;
 use function json_decode;
 
@@ -25,6 +26,12 @@ class MailClientTest extends TestCase
             ->disableOriginalConstructor()
             ->setMethods(['channel'])
             ->getMock();
+
+        $class = new ReflectionClass(MqClient::class);
+
+        $rPropertyAccessor = $class->getProperty('defaultPriority');
+        $rPropertyAccessor->setAccessible(true);
+        $rPropertyAccessor->setValue($queue, MqClient::PRIORITY_NORMAL);
 
         $ch = $this
             ->getMockBuilder(AMQPChannel::class)
