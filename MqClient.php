@@ -3,7 +3,6 @@
 namespace go1\clients;
 
 use DDTrace\Configuration;
-use DDTrace\Format;
 use DDTrace\GlobalTracer;
 use Exception;
 use go1\util\AccessChecker;
@@ -175,7 +174,7 @@ class MqClient
                 $tracer = GlobalTracer::get();
                 if ($span = $tracer->getActiveSpan()) {
                     $ctx = $span->getContext();
-                    $tracer->inject($ctx, Format::TEXT_MAP, $headers);
+                    $tracer->inject($ctx, 'text_map', $headers);
                 }
             }
         }
