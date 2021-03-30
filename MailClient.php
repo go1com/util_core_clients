@@ -62,14 +62,14 @@ class MailClient
         array $queueOptions = [],
         array $categories = []
     ) {
-        $this->send(null, $recipient, $template->getSubject(), $template->getBody(), $template->getHtml(), $context, $options, $attachments, $cc, $bcc, $queueContext, $queueOptions, $categories);
+        $this->send($template->getId(), $recipient, $template->getSubject(), $template->getBody(), $template->getHtml(), $context, $options, $attachments, $cc, $bcc, $queueContext, $queueOptions, $categories);
     }
 
     /**
      * @deprecated
      */
     public function send(
-        $privateKey,
+        $templateKey,
         $recipient,
         $subject,
         $body,
@@ -102,6 +102,7 @@ class MailClient
             'attachments' => $attachments, # array of ['name' => STRING, 'url' => STRING]
             'options'     => $options,
             'categories'  => $categories,
+            'templateKey' => $templateKey ?? '',
         ];
         $data['custom_smtp'] = $this->customSmtp;
         $routingKey = isset($queueOptions['custom']) ? $queueOptions['custom'] : Queue::DO_MAIL_SEND;
