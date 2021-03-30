@@ -61,7 +61,7 @@ class MailClientTest extends TestCase
     public function testLegacySend()
     {
         $mail = $this->getMailClient();
-        $mail->send('', 'user@qa.com', 'test subject', 'test body', 'test <strong>body</strong>');
+        $mail->send('user.welcome.register', 'user@qa.com', 'test subject', 'test body', 'test <strong>body</strong>');
 
         /** @var AMQPMessage $msg */
         $msg = $this->log[0][0];
@@ -69,6 +69,7 @@ class MailClientTest extends TestCase
 
         $this->assertEquals('events', $this->log[0][1], 'no exchange');
         $this->assertEquals('do.mail.send', $this->log[0][2], 'routing of #worker');
+        $this->assertEquals('user.welcome.register', $payload->templateKey);
         $this->assertEquals('user@qa.com', $payload->recipient);
         $this->assertEquals('test subject', $payload->subject);
         $this->assertEquals('test body', $payload->body);
@@ -78,7 +79,7 @@ class MailClientTest extends TestCase
     {
         $mail = $this->getMailClient();
         $mail->withQueueExchange('events');
-        $mail->send('', 'user@qa.com', 'test subject', 'test body', 'test <strong>body</strong>');
+        $mail->send('user.welcome.invite', 'user@qa.com', 'test subject', 'test body', 'test <strong>body</strong>');
 
         /** @var AMQPMessage $msg */
         $msg = $this->log[0][0];
@@ -86,6 +87,7 @@ class MailClientTest extends TestCase
 
         $this->assertEquals('events', $this->log[0][1], 'exchange');
         $this->assertEquals('do.mail.send', $this->log[0][2], 'simple routing key');
+        $this->assertEquals('user.welcome.invite', $payload->templateKey);
         $this->assertEquals('user@qa.com', $payload->recipient);
         $this->assertEquals('test subject', $payload->subject);
         $this->assertEquals('test body', $payload->body);
@@ -95,7 +97,7 @@ class MailClientTest extends TestCase
     {
         $mail = $this->getMailClient();
         $mail->withQueueExchange('events');
-        $mail->send('', 'user@qa.com', '', '', '<strong>body</strong>',[], [], [], [], [], [], [], ['dogs', 'animals', 'pets', 'mammals']);
+        $mail->send('user.welcome.create', 'user@qa.com', '', '', '<strong>body</strong>',[], [], [], [], [], [], [], ['dogs', 'animals', 'pets', 'mammals']);
 
         /** @var AMQPMessage $msg */
         $msg = $this->log[0][0];
@@ -103,6 +105,7 @@ class MailClientTest extends TestCase
 
         $this->assertEquals('events', $this->log[0][1], 'exchange');
         $this->assertEquals('do.mail.send', $this->log[0][2], 'simple routing key');
+        $this->assertEquals('user.welcome.create', $payload->templateKey);
         $this->assertEquals('user@qa.com', $payload->recipient);
         $this->assertEquals(['dogs', 'animals', 'pets', 'mammals'], $payload->categories);
     }

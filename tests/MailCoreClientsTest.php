@@ -43,6 +43,7 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
                 'options'       => [],
                 'custom_smtp'   => true,
                 'categories'    => [],
+                'templateKey'   => 'id',
             ],
             $this->queueMessages[Queue::DO_MAIL_SEND][0]
         );
@@ -75,6 +76,7 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
                 'options'       => [],
                 'custom_smtp'   => false,
                 'categories'    => [],
+                'templateKey'   => 'id',
             ],
             $this->queueMessages[Queue::DO_MAIL_BULK_SEND][0]
         );
@@ -106,6 +108,7 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
                 'options'       => [],
                 'custom_smtp'   => false,
                 'categories'    => [],
+                'templateKey'   => 'id',
             ],
             $this->queueMessages[Queue::DO_MAIL_SEND][0]
         );
@@ -131,6 +134,7 @@ class MailCoreClientsTest extends UtilCoreClientsTestCase
                 'options'     => [],
                 'custom_smtp' => false,
                 'categories'  => [],
+                'templateKey' => 'id',
             ],
             $this->queueMessages[Queue::DO_MAIL_SEND][0]
         );
