@@ -14,7 +14,6 @@ use PhpAmqpLib\Exception\AMQPChannelClosedException;
 use PhpAmqpLib\Exception\AMQPConnectionBlockedException;
 use PhpAmqpLib\Exception\AMQPConnectionClosedException;
 use PhpAmqpLib\Message\AMQPMessage;
-use PhpAmqpLib\Wire\AMQPAbstractCollection;
 use PhpAmqpLib\Wire\AMQPTable;
 use Pimple\Container;
 use Psr\Log\LoggerInterface;
@@ -211,6 +210,8 @@ class MqClient
                 'message' => $e->getMessage(),
                 'where'   => __METHOD__,
             ]);
+
+            throw $e;
         }
     }
 
