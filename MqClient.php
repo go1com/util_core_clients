@@ -10,7 +10,11 @@ use go1\util\publishing\event\EventInterface;
 use go1\util\queue\Queue;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Exception\AMQPChannelClosedException;
+use PhpAmqpLib\Exception\AMQPConnectionBlockedException;
+use PhpAmqpLib\Exception\AMQPConnectionClosedException;
 use PhpAmqpLib\Message\AMQPMessage;
+use PhpAmqpLib\Wire\AMQPAbstractCollection;
 use PhpAmqpLib\Wire\AMQPTable;
 use Pimple\Container;
 use Psr\Log\LoggerInterface;
@@ -18,9 +22,6 @@ use Psr\Log\NullLogger;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PropertyAccess\PropertyAccess;
-use function class_exists;
-use function is_scalar;
-use function json_encode;
 
 class MqClient
 {
@@ -63,8 +64,7 @@ class MqClient
         Container $container = null,
         Request $request = null,
         int $defaultPriority = MqClient::PRIORITY_NORMAL
-    )
-    {
+    ) {
         $this->host = $host;
         $this->port = $port;
         $this->user = $user;
@@ -96,7 +96,7 @@ class MqClient
 
     public function close()
     {
-        $this->channel()->close();
+        $this->logOnError(fn() => $this->channel()->close());
     }
 
     public function batchAdd($body, string $routingKey, array $context = [], int $priority = null)
@@ -107,8 +107,9 @@ class MqClient
     public function batchDone()
     {
         if (isset($this->batchExchange)) {
-            $this->channel()->publish_batch();
-            $this->channel()->basic_publish(new AMQPMessage('quit'), $this->batchExchange);
+            $this->logOnError(fn() => $this->channel()->publish_batch());
+            $this->logOnError(fn() => $this->channel()->basic_publish(new AMQPMessage('quit'), $this->batchExchange));
+
             unset($this->batchExchange);
         }
     }
@@ -133,7 +134,7 @@ class MqClient
         $body,
         string $routingKey,
         array $context = [],
-        $exchange = '',
+        string $exchange = '',
         bool $batch = false,
         int $priority = null
     ) {
@@ -182,12 +183,14 @@ class MqClient
         $msg = new AMQPMessage($body, array_filter([
             'content_type'        => 'application/json',
             'application_headers' => new AMQPTable($headers),
-            'priority'            => $priority || $this->defaultPriority
+            'priority'            => $priority || $this->defaultPriority,
         ]));
 
-        $batch
-            ? $this->channel()->batch_basic_publish($msg, $exchange, $routingKey)
-            : $this->channel()->basic_publish($msg, $exchange, $routingKey);
+        $this->logOnError(
+            fn() => $batch
+                ? $this->channel()->batch_basic_publish($msg, $exchange, $routingKey)
+                : $this->channel()->basic_publish($msg, $exchange, $routingKey)
+        );
 
         if ($batch) {
             if (!isset($this->batchExchange)) {
@@ -195,6 +198,19 @@ class MqClient
             } else if ($this->batchExchange != $exchange) {
                 throw new \BadMethodCallException('[batch] unmatch exchange');
             }
+        }
+    }
+
+    private function logOnError(callable $fn)
+    {
+        try {
+            $fn();
+        } catch (AMQPChannelClosedException | AMQPConnectionClosedException | AMQPConnectionBlockedException $e) {
+            $this->logger->error('failed publishing event to rabbitmq', [
+                'error'   => get_class($e),
+                'message' => $e->getMessage(),
+                'where'   => __METHOD__,
+            ]);
         }
     }
 

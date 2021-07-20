@@ -6,6 +6,7 @@ use Aws\Credentials\CredentialProvider;
 use Aws\S3\S3Client;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
+use Psr\Log\NullLogger;
 
 class UtilCoreClientServiceProvider implements ServiceProviderInterface
 {
@@ -64,7 +65,7 @@ class UtilCoreClientServiceProvider implements ServiceProviderInterface
         };
 
         $c['go1.client.mq'] = function (Container $c) {
-            $logger = null;
+            $logger = $c->offsetExists('logger') ? $c['logger'] : new NullLogger();
             $o = $c['queueOptions'];
 
             $currentRequest = $c->offsetExists('request_stack') ? $c['request_stack']->getCurrentRequest() : null;
