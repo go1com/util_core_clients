@@ -3,7 +3,7 @@
 namespace go1\clients;
 
 use Doctrine\DBAL\Connection;
-use go1\util\MailTemplate;
+use go1\libraries\notify\util\MailTemplate;
 use go1\util\portal\MailTemplate as Template;
 use go1\util\portal\PortalChecker;
 use go1\util\queue\Queue;

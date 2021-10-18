@@ -15,6 +15,7 @@
         "ramsey/uuid":             "^3.4",
         "go1/util_core":           "dev-master",
         "go1.core/util":           "dev-master",
+        "go1.libraries/notify.util": "dev-master",
         "php-amqplib/php-amqplib": "^2.6",
         "symfony/property-access": "^4.0 | ^3.4"
     },
@@ -28,6 +29,7 @@
         "lint": "php-cs-fixer fix --using-cache=no --rules='{\"braces\": {\"allow_single_line_closure\": true}}' ."
     },
     "repositories":      [
-        { "type": "vcs", "url": "https://code.go1.com.au/mirror/go1-core/util.git" }
+        { "type": "vcs", "url": "https://code.go1.com.au/mirror/go1-core/util.git" },
+        { "type": "vcs", "url": "https://code.go1.com.au/domain-notifications/notify-util.git" }
     ]
 }
