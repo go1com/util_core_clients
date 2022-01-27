@@ -1,11 +1,12 @@
 <?php
 
-
 namespace go1\clients;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use Ramsey\Uuid\Uuid;
+use function array_filter;
+use function json_decode;
 
 class AtlantisClient
 {
@@ -25,16 +26,21 @@ class AtlantisClient
         return !is_null($feature);
     }
 
-    public function getFeatureData(string $featureName, string $jwt = null, array $options = []): ?array
+    public function getFeatures(string $jwt = null, array $options = []): ?array
     {
         $res = $this->client->get("{$this->serviceUrl}/features", $options + [
-            'query' => array_filter([
-                'jwt'    => $jwt,
-                'anonID' => $jwt ? null : Uuid::uuid4()
-            ]),
-        ]);
+                'query' => array_filter([
+                    'jwt'    => $jwt,
+                    'anonID' => $jwt ? null : Uuid::uuid4(),
+                ]),
+            ]);
 
-        $features = json_decode($res->getBody()->getContents(), true);
+        return json_decode($res->getBody()->getContents(), true);
+    }
+
+    public function getFeatureData(string $featureName, string $jwt = null, array $options = []): ?array
+    {
+        $features = $this->getFeatures($jwt, $options);
 
         return $features[$featureName] ?? null;
     }
