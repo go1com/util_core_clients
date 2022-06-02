@@ -157,7 +157,7 @@ class MqClient
 
         $body = $body = is_scalar($body) ? $body : json_encode($body);
         $this->doQueue($exchange, $routingKey, $body, $context, $batch, $priority);
-        $this->logger->debug($body, ['exchange' => $exchange, 'routingKey' => $routingKey, 'context' => $context]);
+        $this->logger->debug('Publish to queue', ['exchange' => $exchange, 'routingKey' => $routingKey, 'context' => $context]);
     }
 
     protected function doQueue(
