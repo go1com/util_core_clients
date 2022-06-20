@@ -24,10 +24,6 @@ class UtilCoreClientServiceProvider implements ServiceProviderInterface
             return new UserClient($c['client'], $c['user_url'], $c['go1.client.mq'], $c['go1.client.user-domain-helper']);
         };
 
-        $c['go1.client.mail'] = function (Container $c) {
-            return new MailClient($c['go1.client.mq']);
-        };
-
         $c['go1.client.lo'] = function (Container $c) {
             return new LoClient($c['client'], $c['lo_url'], $c['go1.client.mq']);
         };
